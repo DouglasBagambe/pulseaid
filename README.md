@@ -34,24 +34,28 @@ PulseAid is a hackathon-ready MVP that revolutionizes crowdfunding through block
 ## 🛠️ Tech Stack
 
 ### Blockchain & Web3
+
 - **Network**: Celo Alfajores Testnet
 - **Smart Contracts**: Solidity 0.8.19
 - **Wallet**: Valora/Celo ContractKit
 - **Storage**: IPFS via Web3.Storage
 
 ### Frontend
+
 - **Framework**: Next.js 13+ with TypeScript
 - **Styling**: Tailwind CSS
 - **Wallet**: @celo-tools/use-contractkit
 - **State**: React Hooks
 
 ### Backend
+
 - **Runtime**: Node.js with Express
 - **Database**: MongoDB with Mongoose
 - **File Upload**: Multer
 - **Blockchain**: Ethers.js
 
 ### AI & Verification
+
 - **Service**: Express microservice
 - **Storage**: IPFS for proof documents
 - **Future**: OpenAI integration ready
@@ -73,6 +77,7 @@ pulseaid/
 ## 🎨 Design System
 
 ### Color Palette
+
 - **Primary**: #0F62FE (Electric Blue)
 - **Accent**: #00C2A8 (Celo Teal)
 - **Background**: #0B1020 (Dark Navy)
@@ -80,6 +85,7 @@ pulseaid/
 - **Muted**: #98A0B3 (Light Gray)
 
 ### Typography
+
 - **Font**: Inter (Google Fonts)
 - **Mobile**: 16px base, 48px CTA buttons
 - **Rounded**: 1rem border radius
@@ -87,6 +93,7 @@ pulseaid/
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - Node.js 18+
 - MongoDB
 - Celo Alfajores testnet access
@@ -95,6 +102,7 @@ pulseaid/
 ### Installation
 
 1. **Clone and setup**
+
 ```bash
 git clone https://github.com/DouglasBagambe/pulseaid.git
 cd pulseaid
@@ -102,12 +110,14 @@ npm install
 ```
 
 2. **Environment setup**
+
 ```bash
 cp .env.example .env
 # Fill in your API keys and private keys
 ```
 
 3. **Start development**
+
 ```bash
 # Start all services
 npm run start:frontend    # Frontend on :3000

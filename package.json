@@ -1,0 +1,27 @@
+{
+  "name": "pulseaid",
+  "version": "1.0.0",
+  "description": "A full-stack Web3 crowdfunding platform built for Celo blockchain, featuring AI-powered verification and NFT badge rewards.",
+  "main": "index.js",
+  "scripts": {
+    "start:frontend": "cd frontend && npm run dev",
+    "start:backend": "cd backend && npm run dev",
+    "start:ai": "cd ai && npm run dev",
+    "deploy:contracts": "cd contracts && npx hardhat run scripts/deploy.js --network alfajores",
+    "test:contracts": "cd contracts && npx hardhat test",
+    "demo": "node scripts/demo.js",
+    "seed": "node scripts/seed.js",
+    "install:all": "npm install && cd frontend && npm install && cd ../backend && npm install && cd ../contracts && npm install && cd ../ai && npm install"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DouglasBagambe/pulseaid.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/DouglasBagambe/pulseaid/issues"
+  },
+  "homepage": "https://github.com/DouglasBagambe/pulseaid#readme"
+}
