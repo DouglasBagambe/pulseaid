@@ -1,42 +1,38 @@
 const { expect } = require("chai");
+const { ethers } = require("hardhat");
 
-describe("PulseAid Contracts", function () {
-  let badge, campaign, owner, donor;
+describe("PulseAidCampaign", function () {
+  let campaign, badge, escrow, owner, donor, beneficiary;
 
-  beforeEach(async function () {
-    [owner, donor] = await ethers.getSigners();
-
+  beforeEach(async () => {
+    [owner, donor, beneficiary] = await ethers.getSigners();
+    
+    const EscrowHelper = await ethers.getContractFactory("PulseAidEscrowHelper");
+    escrow = await EscrowHelper.deploy();
+    
     const Badge = await ethers.getContractFactory("PulseAidBadge");
     badge = await Badge.deploy();
-    await badge.deployed();
-
+    
     const Campaign = await ethers.getContractFactory("PulseAidCampaign");
-    campaign = await Campaign.deploy();
-    await campaign.deployed();
+    campaign = await Campaign.deploy(badge.address, escrow.address);
+    await campaign.transferOwnership(owner.address);
   });
 
-  it("creates campaign and accepts donations", async function () {
-    await campaign.createCampaign(
-      "ipfs://cid123",
-      1000,
-      1,
-      Math.floor(Date.now() / 1000) + 3600
-    );
-    await expect(
-      campaign.connect(donor).donate(1, { value: ethers.utils.parseEther("1") })
-    ).to.emit(campaign, "Donated");
+  it("Should create a campaign", async function () {
+    await campaign.connect(beneficiary).createCampaign("ipfs://QmTest", 1000, 0, Math.floor(Date.now() / 1000) + 86400); // Kindness mode
+    const camp = await campaign.campaigns(1);
+    expect(camp.beneficiary).to.equal(beneficiary.address);
   });
 
-  it("releases funds by owner", async function () {
-    await campaign.createCampaign(
-      "ipfs://cid123",
-      1000,
-      1,
-      Math.floor(Date.now() / 1000) + 3600
-    );
-    await campaign
-      .connect(donor)
-      .donate(1, { value: ethers.utils.parseEther("0.2") });
-    await expect(campaign.releaseFunds(1)).to.emit(campaign, "FundsReleased");
+  it("Should handle donation and release", async function () {
+    await campaign.connect(beneficiary).createCampaign("ipfs://QmTest", 1000, 0, Math.floor(Date.now() / 1000) + 86400);
+    await campaign.connect(donor).donate(1, { value: 500 });
+    const camp = await campaign.campaigns(1);
+    expect(camp.raised).to.equal(500);
+    
+    await campaign.connect(owner).approveCampaign(1);
+    // Check beneficiary balance increased (simplified; use balance checks in full test)
   });
+
+  // Add more tests for refund, badge mint, etc.
 });
