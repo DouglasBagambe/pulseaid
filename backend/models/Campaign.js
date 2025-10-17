@@ -1,23 +1,11 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
-const CampaignSchema = new mongoose.Schema(
-  {
-    title: { type: String, required: true },
-    description: { type: String },
-    goal: { type: Number, required: true },
-    mode: { type: Number, required: true }, // 0 kindness, 1 escrow
-    deadline: { type: Number, required: true }, // unix seconds
-    ipfsProof: { type: String },
-    proofs: { type: [String], default: [] },
-    status: {
-      type: String,
-      enum: ["PENDING", "APPROVED", "REJECTED"],
-      default: "PENDING",
-    },
-    ownerAddress: { type: String },
-    contractCampaignId: { type: Number },
-  },
-  { timestamps: true }
-);
+const campaignSchema = new mongoose.Schema({
+  chainId: Number,
+  ipfsCID: String,
+  status: { type: String, default: 'PENDING' },
+  proofs: [String], // Array of IPFS CIDs
+  createdAt: { type: Date, default: Date.now }
+});
 
-module.exports = mongoose.model("Campaign", CampaignSchema);
+module.exports = mongoose.model('Campaign', campaignSchema);

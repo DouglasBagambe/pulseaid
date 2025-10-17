@@ -1,18 +1,30 @@
-const { Web3Storage, File } = require("web3.storage");
+const fs = require('fs');
+const { FilebaseClient } = require('@filebase/client');
+require('dotenv').config();
 
-function getClient() {
-  const token = process.env.WEB3STORAGE_API_KEY;
-  if (!token) {
-    throw new Error("WEB3STORAGE_API_KEY missing");
+const filebase = new FilebaseClient({
+  accessKeyId: process.env.FILEBASE_ACCESS_KEY_ID,
+  secretAccessKey: process.env.FILEBASE_SECRET_ACCESS_KEY,
+  bucket: process.env.FILEBASE_BUCKET
+});
+
+async function uploadToIPFS(filePath, metadata) {
+  try {
+    const fileContent = fs.readFileSync(filePath);
+    const fileResult = await filebase.store({
+      content: fileContent,
+      key: 'proof.jpg',
+      contentType: 'image/jpeg'
+    });
+    const metaResult = await filebase.store({
+      content: JSON.stringify({ metadata }),
+      key: 'metadata.json',
+      contentType: 'application/json'
+    });
+    return fileResult.cid;
+  } catch (err) {
+    throw new Error(`Filebase upload failed: ${err.message}`);
   }
-  return new Web3Storage({ token });
 }
 
-async function uploadFileToIPFS(file) {
-  const client = getClient();
-  const f = new File([file.buffer], file.originalname, { type: file.mimetype });
-  const cid = await client.put([f], { wrapWithDirectory: false });
-  return `ipfs://${cid}`;
-}
-
-module.exports = { uploadFileToIPFS };
+module.exports = { uploadToIPFS };

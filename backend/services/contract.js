@@ -1,98 +1,57 @@
-const { ethers } = require("ethers");
+const ethers = require('ethers');
+require('dotenv').config();
 
-// Dummy addresses; replace after deployment
-const DUMMY_BADGE_ADDRESS =
-  process.env.BADGE_ADDRESS || "0xBadgeAddress000000000000000000000000000000";
-const DUMMY_CAMPAIGN_ADDRESS =
-  process.env.CAMPAIGN_ADDRESS || "0xCampaignAddress0000000000000000000000000";
+const CAMPAIGN_ABI = require('../../contracts/artifacts/contracts/PulseAidCampaign.sol/PulseAidCampaign.json').abi;
+const BADGE_ABI = require('../../contracts/artifacts/contracts/PulseAidBadge.sol/PulseAidBadge.json').abi;
+const ESCROW_ABI = require('../../contracts/artifacts/contracts/PulseAidEscrowHelper.sol/PulseAidEscrowHelper.json').abi;
 
-// Minimal ABIs (fill in with real ABIs after compile)
-const CAMPAIGN_ABI = [
-  "function createCampaign(string ipfsProof, uint256 goal, uint8 mode, uint256 deadline) external",
-  "function releaseFunds(uint256 id) external",
-  "function refund(uint256 id, address recipient) external",
-];
-
-const BADGE_ABI = ["function mintBadge(address to) external returns (uint256)"];
-
-function getProviderAndWallet() {
-  const url =
-    process.env.ALFAJORES_RPC || "https://alfajores-forno.celo-testnet.org";
-  const key = process.env.DEPLOYER_PRIVATE_KEY;
-  const provider = new ethers.providers.JsonRpcProvider(url);
-  const wallet = key
-    ? new ethers.Wallet(key, provider)
-    : ethers.Wallet.createRandom().connect(provider);
-  return { provider, wallet };
+const provider = new ethers.JsonRpcProvider(process.env.CELO_SEPOLIA_RPC);
+let wallet;
+try {
+  wallet = new ethers.Wallet(process.env.DEPLOYER_PRIVATE_KEY, provider);
+} catch (err) {
+  throw new Error(`Wallet init failed: ${err.message}`);
 }
 
-async function createCampaignOnChain(ipfsCid, goal, mode, deadline) {
-  // For hackathon, we can simulate an id until contracts are deployed
-  try {
-    const { wallet } = getProviderAndWallet();
-    const contract = new ethers.Contract(
-      DUMMY_CAMPAIGN_ADDRESS,
-      CAMPAIGN_ABI,
-      wallet
-    );
-    const tx = await contract.createCampaign(ipfsCid, goal, mode, deadline);
-    await tx.wait();
-    // In a real implementation, fetch campaignCount to get id
-    return { txHash: tx.hash, campaignId: Date.now() % 100000 }; // mock id
-  } catch (e) {
-    // Fallback: purely mock id when address is dummy
-    return { txHash: null, campaignId: Math.floor(Math.random() * 100000) };
-  }
-}
+const campaignContract = new ethers.Contract('0xe1085DB3c91cB5F0dad3bD22E7eA7ac57713BD7F', CAMPAIGN_ABI, wallet);
+const badgeContract = new ethers.Contract('0x533b9B683DA95967151Ea5cEBF0EcA3BAFdE3665', BADGE_ABI, wallet);
+const escrowContract = new ethers.Contract('0xcf2D0f99dd63b64F465E61df6B701Dd1ECB49c19', ESCROW_ABI, wallet);
 
-async function releaseFundsOnChain(campaignId) {
+async function createCampaign(ipfsCID, goal, mode, deadline) {
   try {
-    const { wallet } = getProviderAndWallet();
-    const contract = new ethers.Contract(
-      DUMMY_CAMPAIGN_ADDRESS,
-      CAMPAIGN_ABI,
-      wallet
-    );
-    const tx = await contract.releaseFunds(campaignId);
-    await tx.wait();
-    return { txHash: tx.hash };
-  } catch (e) {
-    return { txHash: null };
-  }
-}
-
-async function refundOnChain(campaignId, recipient) {
-  try {
-    const { wallet } = getProviderAndWallet();
-    const contract = new ethers.Contract(
-      DUMMY_CAMPAIGN_ADDRESS,
-      CAMPAIGN_ABI,
-      wallet
-    );
-    const tx = await contract.refund(campaignId, recipient || wallet.address);
-    await tx.wait();
-    return { txHash: tx.hash };
-  } catch (e) {
-    return { txHash: null };
-  }
-}
-
-async function mintBadge(toAddress) {
-  try {
-    const { wallet } = getProviderAndWallet();
-    const badge = new ethers.Contract(DUMMY_BADGE_ADDRESS, BADGE_ABI, wallet);
-    const tx = await badge.mintBadge(toAddress);
+    const tx = await campaignContract.createCampaign(ipfsCID, ethers.utils.parseEther(goal), mode, deadline);
     const receipt = await tx.wait();
-    // naive parse: last event log index as tokenId unsupported without ABI; mock
-    return { txHash: tx.hash, tokenId: Date.now() % 100000 };
-  } catch (e) {
-    return { txHash: null, tokenId: null };
+    return (await campaignContract.campaignCount()).toNumber();
+  } catch (err) {
+    throw new Error(`Create campaign failed: ${err.message}`);
   }
 }
 
-module.exports = {
-  createCampaignOnChain,
-  releaseFundsOnChain,
-  refundOnChain,
-  mintBadge,
-};
+async function approveCampaign(id) {
+  try {
+    const tx = await campaignContract.approveCampaign(id);
+    await tx.wait();
+    // Mock donor list for demo (replace with escrowContract.getDonors if implemented)
+    const donors = [wallet.address]; // Replace with actual donor fetch
+    for (const donor of donors) {
+      const amount = await escrowContract.contributions(id, donor);
+      if (amount > 0) {
+        const badgeType = (await campaignContract.campaigns(id)).mode === 0 ? 0 : 1;
+        await badgeContract.mintBadge(donor, id, badgeType);
+      }
+    }
+  } catch (err) {
+    throw new Error(`Approve campaign failed: ${err.message}`);
+  }
+}
+
+async function submitProof(id, proofCID) {
+  try {
+    const tx = await campaignContract.submitProof(id, proofCID);
+    await tx.wait();
+  } catch (err) {
+    throw new Error(`Submit proof failed: ${err.message}`);
+  }
+}
+
+module.exports = { createCampaign, approveCampaign, submitProof };
