@@ -1,0 +1,25 @@
+@"
+# Node
+node_modules/
+npm-debug.log*
+yarn.lock
+pnpm-lock.yaml
+
+# Env
+.env
+.env.local
+.env.*.local
+.env.example
+
+# Logs
+logs
+*.log
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+cache/
+artifacts/
+coverage/

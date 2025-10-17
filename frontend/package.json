@@ -1,0 +1,15 @@
+{
+  "name": "frontend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "echo Replace with Next.js dev script",
+    "build": "echo Replace with Next.js build script",
+    "start": "echo Replace with Next.js start script"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
