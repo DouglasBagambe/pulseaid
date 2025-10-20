@@ -76,12 +76,12 @@ export default function Home() {
             {/* Main Heading */}
             <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
               <span className="bg-gradient-to-r from-[#FCFF52] via-[#35D07F] to-[#FCFF52] bg-clip-text text-transparent animate-gradient">
-                Blockchain Hope
+                Onchain Hope
               </span>
             </h1>
 
             <p className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed">
-              Mobile-first transparent crowdfunding for real human crises. Every
+              Transparent crowdfunding for real human crises. Every
               donation tracked on-chain with AI-powered fraud detection.
             </p>
 
@@ -94,7 +94,7 @@ export default function Home() {
                 Create Campaign
               </a>
               <a
-                href="#campaigns"
+                href="/campaigns"
                 className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-white/5 backdrop-blur-sm text-white font-semibold hover:bg-white/10 transition-all duration-300 border border-white/10"
               >
                 Explore Campaigns

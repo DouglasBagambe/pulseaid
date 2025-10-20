@@ -1,6 +1,10 @@
+"use client";
+
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 
 import Web3Provider from "@/providers/Web3Provider";
 import WalletConnector from "@/components/WalletConnector";
@@ -15,182 +19,369 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "PulseAid - Blockchain Hope. Real Impact.",
-  description: "Transparent crowdfunding for real human crises in Africa",
-};
-
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const pathname = usePathname();
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const navLinks = [
+    { href: "/", label: "Home" },
+    { href: "/create", label: "Create" },
+    { href: "/campaigns", label: "Campaigns" },
+    { href: "/badges", label: "Badges" },
+    { href: "/admin", label: "Admin" },
+  ];
+
+  const isActive = (href: string) => pathname === href;
+
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#0B1020]`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#0B1020] overflow-x-hidden`}
       >
         <Web3Provider>
-          <div className="min-h-screen flex flex-col">
-            {/* Header with Glass Morphism */}
-            <header className="sticky top-0 z-50 bg-[#0B1020]/80 backdrop-blur-xl border-b border-white/10">
-              <div className="container mx-auto px-4 py-4">
-                <div className="flex items-center justify-between">
-                  {/* Logo */}
-                  <a href="/" className="flex items-center gap-3 group">
+          <div className="min-h-screen flex flex-col relative">
+
+
+            {/* EPIC Header */}
+            <header 
+              className={`fixed top-0 w-full z-50 transition-all duration-700 ${
+                scrolled 
+                  ? 'bg-[#0B1020]/60 backdrop-blur-2xl shadow-2xl shadow-[#35D07F]/5' 
+                  : 'bg-transparent'
+              }`}
+            >
+              {/* Multi-layer gradient border */}
+              <div className="absolute inset-x-0 bottom-0 h-[1px]">
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#35D07F] to-transparent opacity-50" />
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#FCFF52] to-transparent opacity-30 blur-sm" />
+              </div>
+              
+              <div className="container mx-auto px-4 lg:px-8">
+                <div className="flex items-center justify-between h-24">
+                  {/* MEGA Logo */}
+                  <a 
+                    href="/" 
+                    className="flex items-center gap-4 group relative z-10"
+                  >
                     <div className="relative">
-                      <div className="absolute inset-0 bg-gradient-to-br from-[#35D07F] to-[#FCFF52] rounded-xl blur-md group-hover:blur-lg transition-all duration-300" />
-                      <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-[#35D07F] to-[#FCFF52] flex items-center justify-center">
-                        <svg className="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                        </svg>
+                      {/* Glow layer */}
+                      <div className="absolute -inset-4 bg-gradient-to-r from-[#35D07F] via-[#FCFF52] to-[#35D07F] rounded-full opacity-40 group-hover:opacity-60 blur-2xl transition-all duration-700" />
+                      
+                      {/* Logo container with glassmorphism */}
+                      <div className="relative w-16 h-16 rounded-2xl bg-gradient-to-br from-[#35D07F] via-[#FCFF52] to-[#35D07F] p-[3px] transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
+                        <div className="w-full h-full bg-[#0B1020]/90 backdrop-blur-xl rounded-2xl flex items-center justify-center relative overflow-hidden">
+                          {/* Animated shine effect */}
+                          <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                          <img 
+                            src="/logo.svg" 
+                            alt="PulseAid" 
+                            className="w-9 h-9 object-contain relative z-10 drop-shadow-2xl"
+                          />
+                        </div>
                       </div>
                     </div>
+                    
+                    {/* Brand text with animations */}
                     <div className="hidden sm:block">
-                      <h1 className="text-xl font-bold text-white group-hover:text-[#35D07F] transition-colors duration-300">
+                      <h1 className="text-2xl font-black bg-gradient-to-r from-white via-[#35D07F] to-[#FCFF52] bg-clip-text text-transparent group-hover:tracking-wider transition-all duration-500 drop-shadow-lg">
                         PulseAid
                       </h1>
-                      <p className="text-xs text-gray-500">Celo Powered</p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <div className="relative">
+                          <div className="w-2 h-2 rounded-full bg-[#35D07F] animate-ping absolute" />
+                          <div className="w-2 h-2 rounded-full bg-[#35D07F]" />
+                        </div>
+                        <p className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.2em]">
+                          Celo Powered
+                        </p>
+                      </div>
                     </div>
                   </a>
 
-                  {/* Desktop Navigation */}
-                  <nav className="hidden lg:flex items-center gap-1">
-                    <a
-                      href="/"
-                      className="px-4 py-2 rounded-xl text-sm font-medium text-gray-300 hover:text-white hover:bg-white/5 transition-all duration-300"
-                    >
-                      Home
-                    </a>
-                    <a
-                      href="/create"
-                      className="px-4 py-2 rounded-xl text-sm font-medium text-gray-300 hover:text-white hover:bg-white/5 transition-all duration-300"
-                    >
-                      Create
-                    </a>
-                    <a
-                      href="/badges"
-                      className="px-4 py-2 rounded-xl text-sm font-medium text-gray-300 hover:text-white hover:bg-white/5 transition-all duration-300"
-                    >
-                      Badges
-                    </a>
-                    <a
-                      href="/admin"
-                      className="px-4 py-2 rounded-xl text-sm font-medium text-gray-300 hover:text-white hover:bg-white/5 transition-all duration-300"
-                    >
-                      Admin
-                    </a>
+                  {/* EPIC Desktop Navigation */}
+                  <nav className="hidden lg:flex items-center gap-3 bg-white/5 backdrop-blur-xl rounded-full p-2 border border-white/10">
+                    {navLinks.map((link) => {
+                      const active = isActive(link.href);
+                      return (
+                        <a
+                          key={link.href}
+                          href={link.href}
+                          className="relative group"
+                        >
+                          {/* Active indicator background */}
+                          {active && (
+                            <>
+                              <div className="absolute inset-0 bg-gradient-to-r from-[#35D07F] to-[#FCFF52] rounded-full" />
+                              <div className="absolute -inset-1 bg-gradient-to-r from-[#35D07F] to-[#FCFF52] rounded-full blur-lg opacity-50" />
+                            </>
+                          )}
+                          
+                          <div className={`relative px-6 py-3 rounded-full font-semibold text-sm transition-all duration-500 ${
+                            active 
+                              ? 'text-black' 
+                              : 'text-gray-400 hover:text-white'
+                          }`}>
+                            <span className="relative z-10">{link.label}</span>
+                            
+                            {/* Hover effect for non-active items */}
+                            {!active && (
+                              <>
+                                <div className="absolute inset-0 bg-gradient-to-r from-[#35D07F]/20 to-[#FCFF52]/20 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-500" />
+                                <div className="absolute inset-0 border border-[#35D07F]/0 group-hover:border-[#35D07F]/50 rounded-full transition-all duration-500" />
+                              </>
+                            )}
+                          </div>
+                        </a>
+                      );
+                    })}
                   </nav>
 
-                  {/* Wallet Connector */}
-                  <div className="flex items-center gap-3">
-                    <WalletConnector />
-                    
-                    {/* Mobile Menu Button */}
-                    <button className="lg:hidden p-2 rounded-xl bg-white/5 hover:bg-white/10 transition-all duration-300 border border-white/10">
-                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                      </svg>
+                  {/* Right side with epic styling */}
+                  <div className="flex items-center gap-4">
+                    <div className="hidden sm:block">
+                      <WalletConnector />
+                    </div>
+
+                    {/* MEGA Mobile Menu Button */}
+                    <button 
+                      onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                      className="lg:hidden relative group"
+                      aria-label="Toggle menu"
+                    >
+                      <div className="absolute -inset-2 bg-gradient-to-r from-[#35D07F] to-[#FCFF52] rounded-2xl blur-lg opacity-30 group-hover:opacity-75 transition-all duration-300" />
+                      <div className="relative p-3 rounded-2xl bg-gradient-to-br from-[#35D07F] to-[#FCFF52] hover:scale-110 transition-transform duration-300">
+                        <div className="w-6 h-6 flex flex-col items-center justify-center gap-1.5">
+                          <span 
+                            className={`w-6 h-0.5 bg-black rounded-full transition-all duration-500 ${
+                              mobileMenuOpen ? 'rotate-45 translate-y-2' : ''
+                            }`}
+                          />
+                          <span 
+                            className={`w-6 h-0.5 bg-black rounded-full transition-all duration-300 ${
+                              mobileMenuOpen ? 'opacity-0 scale-0' : ''
+                            }`}
+                          />
+                          <span 
+                            className={`w-6 h-0.5 bg-black rounded-full transition-all duration-500 ${
+                              mobileMenuOpen ? '-rotate-45 -translate-y-2' : ''
+                            }`}
+                          />
+                        </div>
+                      </div>
                     </button>
                   </div>
                 </div>
+              </div>
 
-                {/* Mobile Navigation */}
-                <nav className="lg:hidden mt-4 pt-4 border-t border-white/10 flex flex-wrap gap-2">
-                  <a
-                    href="/"
-                    className="flex-1 min-w-[120px] px-4 py-2 rounded-xl text-sm font-medium text-center text-gray-300 hover:text-white bg-white/5 hover:bg-white/10 transition-all duration-300"
-                  >
-                    Home
-                  </a>
-                  <a
-                    href="/create"
-                    className="flex-1 min-w-[120px] px-4 py-2 rounded-xl text-sm font-medium text-center text-gray-300 hover:text-white bg-white/5 hover:bg-white/10 transition-all duration-300"
-                  >
-                    Create
-                  </a>
-                  <a
-                    href="/badges"
-                    className="flex-1 min-w-[120px] px-4 py-2 rounded-xl text-sm font-medium text-center text-gray-300 hover:text-white bg-white/5 hover:bg-white/10 transition-all duration-300"
-                  >
-                    Badges
-                  </a>
-                  <a
-                    href="/admin"
-                    className="flex-1 min-w-[120px] px-4 py-2 rounded-xl text-sm font-medium text-center text-gray-300 hover:text-white bg-white/5 hover:bg-white/10 transition-all duration-300"
-                  >
-                    Admin
-                  </a>
-                </nav>
+              {/* EPIC Mobile Menu */}
+              <div 
+                className={`lg:hidden absolute top-full left-0 w-full transition-all duration-700 ease-out ${
+                  mobileMenuOpen 
+                    ? 'opacity-100 translate-y-0 pointer-events-auto' 
+                    : 'opacity-0 -translate-y-4 pointer-events-none'
+                }`}
+              >
+                <div className="bg-[#0B1020]/95 backdrop-blur-2xl border-t border-white/5 shadow-2xl">
+                  <div className="container mx-auto px-4 py-8">
+                    {/* Mobile Wallet */}
+                    <div className="sm:hidden mb-6">
+                      <WalletConnector />
+                    </div>
+                    
+                    {/* Mobile Nav Links */}
+                    <div className="space-y-3">
+                      {navLinks.map((link, index) => {
+                        const active = isActive(link.href);
+                        return (
+                          <a
+                            key={link.href}
+                            href={link.href}
+                            className="block group"
+                            style={{ 
+                              animationDelay: `${index * 75}ms`,
+                              animation: mobileMenuOpen ? 'slideInUp 0.5s ease-out forwards' : 'none',
+                              opacity: 0
+                            }}
+                            onClick={() => setMobileMenuOpen(false)}
+                          >
+                            <div className={`relative overflow-hidden rounded-2xl transition-all duration-500 ${
+                              active 
+                                ? 'bg-gradient-to-r from-[#35D07F] to-[#FCFF52]' 
+                                : 'bg-white/5 hover:bg-white/10'
+                            }`}>
+                              
+                              <div className={`relative px-6 py-5 flex items-center justify-between ${
+                                active ? 'bg-[#0B1020]/90' : ''
+                              } rounded-2xl m-[2px]`}>
+                                <span className={`text-lg font-bold transition-all duration-300 ${
+                                  active 
+                                    ? 'text-transparent bg-gradient-to-r from-[#35D07F] to-[#FCFF52] bg-clip-text' 
+                                    : 'text-gray-300 group-hover:text-white'
+                                }`}>
+                                  {link.label}
+                                </span>
+                                <div className={`transform transition-all duration-500 ${
+                                  active ? 'rotate-0 scale-110' : 'group-hover:translate-x-2'
+                                }`}>
+                                  {active ? (
+                                    <div className="w-2 h-2 rounded-full bg-gradient-to-r from-[#35D07F] to-[#FCFF52]" />
+                                  ) : (
+                                    <svg className="w-5 h-5 text-gray-500 group-hover:text-[#35D07F]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                    </svg>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </a>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
               </div>
             </header>
 
-            {/* Main Content */}
-            <main className="flex-1">{children}</main>
+            {/* Backdrop overlay */}
+            <div 
+              className={`lg:hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-40 transition-opacity duration-500 ${
+                mobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+              }`}
+              onClick={() => setMobileMenuOpen(false)}
+            />
 
-            {/* Footer with Gradient Border */}
-            <footer className="relative mt-20">
-              {/* Gradient Border Top */}
-              <div className="h-px bg-gradient-to-r from-transparent via-[#35D07F]/50 to-transparent" />
-              
-              <div className="bg-[#0B1020]/50 backdrop-blur-sm">
-                <div className="container mx-auto px-4 py-12">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-                    {/* Brand Column */}
-                    <div>
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#35D07F] to-[#FCFF52]" />
-                        <h3 className="text-lg font-bold text-white">PulseAid</h3>
-                      </div>
-                      <p className="text-sm text-gray-400 leading-relaxed">
-                        Transparent, blockchain-powered crowdfunding for real human crises across Africa.
+            {/* Main Content */}
+            <main className="flex-1 relative z-10 pt-24">{children}</main>
+
+            {/* EPIC Footer */}
+            <footer className="relative mt-32 z-10">
+              {/* Top border */}
+              <div className="absolute inset-x-0 top-0 h-[2px]">
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#35D07F] to-transparent opacity-50" />
+              </div>
+
+              <div className="bg-gradient-to-b from-transparent via-[#0B1020]/50 to-[#0B1020] backdrop-blur-xl">
+                <div className="container mx-auto px-4 lg:px-8 py-20">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
+                    {/* MEGA Brand Column */}
+                    <div className="lg:col-span-2">
+                      <a href="/" className="flex items-center gap-4 mb-8 group w-fit">
+                        <div className="relative">
+                          <div className="absolute -inset-3 bg-gradient-to-r from-[#35D07F] to-[#FCFF52] rounded-full opacity-50 blur-2xl group-hover:opacity-75 transition-opacity duration-500" />
+                          <div className="relative w-14 h-14 rounded-2xl bg-gradient-to-br from-[#35D07F] to-[#FCFF52] p-[3px]">
+                            <div className="w-full h-full bg-[#0B1020] rounded-2xl flex items-center justify-center">
+                              <img 
+                                src="/logo.svg" 
+                                alt="PulseAid" 
+                                className="w-8 h-8 object-contain"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                        <h3 className="text-3xl font-black bg-gradient-to-r from-white via-[#35D07F] to-[#FCFF52] bg-clip-text text-transparent">
+                          PulseAid
+                        </h3>
+                      </a>
+                      <p className="text-base text-gray-400 leading-relaxed max-w-md mb-8">
+                        Revolutionizing humanitarian aid through blockchain technology. 
+                        <span className="text-[#35D07F] font-semibold"> Transparent</span>, 
+                        <span className="text-[#FCFF52] font-semibold"> instant</span>, and 
+                        <span className="text-white font-semibold"> impactful</span>.
                       </p>
+                      <div className="flex flex-wrap gap-3">
+                        <div className="group relative">
+                          <div className="absolute -inset-1 bg-gradient-to-r from-[#35D07F] to-[#FCFF52] rounded-xl opacity-50 group-hover:opacity-75 blur transition-all duration-300" />
+                          <div className="relative flex items-center gap-3 px-5 py-3 bg-[#0B1020] rounded-xl border border-[#35D07F]/30">
+                            <div className="relative">
+                              <div className="w-2 h-2 rounded-full bg-[#35D07F] animate-ping absolute" />
+                              <div className="w-2 h-2 rounded-full bg-[#35D07F]" />
+                            </div>
+                            <span className="text-sm font-bold text-gray-300">
+                              EthNile 2025
+                            </span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
 
-                    {/* Quick Links */}
+                    {/* Navigation */}
                     <div>
-                      <h4 className="text-sm font-semibold text-white mb-4">Quick Links</h4>
-                      <div className="space-y-2">
-                        <a href="/" className="block text-sm text-gray-400 hover:text-[#35D07F] transition-colors duration-300">
-                          Home
-                        </a>
-                        <a href="/create" className="block text-sm text-gray-400 hover:text-[#35D07F] transition-colors duration-300">
-                          Create Campaign
-                        </a>
-                        <a href="/badges" className="block text-sm text-gray-400 hover:text-[#35D07F] transition-colors duration-300">
-                          My Badges
-                        </a>
+                      <h4 className="text-sm font-black text-white mb-8 uppercase tracking-[0.2em] flex items-center gap-2">
+                        <div className="w-8 h-[2px] bg-gradient-to-r from-[#35D07F] to-transparent" />
+                        Navigation
+                      </h4>
+                      <div className="space-y-4">
+                        {navLinks.map((link) => (
+                          <a
+                            key={link.href}
+                            href={link.href}
+                            className="group flex items-center gap-3 text-gray-400 hover:text-[#35D07F] transition-all duration-300"
+                          >
+                            <div className="w-1.5 h-1.5 rounded-full bg-gray-600 group-hover:bg-[#35D07F] group-hover:w-8 transition-all duration-500" />
+                            <span className="font-medium">{link.label}</span>
+                          </a>
+                        ))}
                       </div>
                     </div>
 
                     {/* Tech Stack */}
                     <div>
-                      <h4 className="text-sm font-semibold text-white mb-4">Built With</h4>
-                      <div className="flex flex-wrap gap-2">
-                        <span className="px-3 py-1 rounded-full bg-[#35D07F]/10 border border-[#35D07F]/20 text-xs text-[#35D07F] font-medium">
-                          Celo
-                        </span>
-                        <span className="px-3 py-1 rounded-full bg-[#FCFF52]/10 border border-[#FCFF52]/20 text-xs text-[#FCFF52] font-medium">
-                          AI Powered
-                        </span>
-                        <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs text-gray-400 font-medium">
-                          Next.js
-                        </span>
+                      <h4 className="text-sm font-black text-white mb-8 uppercase tracking-[0.2em] flex items-center gap-2">
+                        <div className="w-8 h-[2px] bg-gradient-to-r from-[#FCFF52] to-transparent" />
+                        Powered By
+                      </h4>
+                      <div className="flex flex-wrap gap-3">
+                        {[
+                          { label: 'Celo', color: 'from-[#35D07F] to-[#35D07F]' },
+                          { label: 'AI', color: 'from-[#FCFF52] to-[#FCFF52]' },
+                          { label: 'Next.js', color: 'from-white to-gray-400' },
+                          { label: 'Web3', color: 'from-purple-400 to-pink-400' }
+                        ].map((tech) => (
+                          <div key={tech.label} className="group relative">
+                            <div className={`absolute -inset-1 bg-gradient-to-r ${tech.color} rounded-xl opacity-0 group-hover:opacity-50 blur transition-all duration-300`} />
+                            <div className="relative px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 group-hover:border-white/30 transition-all duration-300">
+                              <span className={`text-xs font-bold bg-gradient-to-r ${tech.color} bg-clip-text text-transparent`}>
+                                {tech.label}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   </div>
 
-                  {/* Bottom Bar */}
-                  <div className="pt-8 border-t border-white/10">
-                    <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                  {/* EPIC Bottom Bar */}
+                  <div className="pt-10 border-t border-white/5">
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-6">
                       <p className="text-sm text-gray-500 text-center md:text-left">
-                        © 2025 PulseAid. Blockchain Hope. Real Impact.
+                        © 2025 PulseAid. 
+                        <span className="mx-2 text-[#35D07F] font-bold">Onchain Hope.</span>
+                        <span className="text-[#FCFF52] font-bold">Real Impact.</span>
                       </p>
-                      <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10">
-                          <div className="w-2 h-2 rounded-full bg-[#35D07F] animate-pulse" />
-                          <span className="text-xs text-gray-400">Built for EthNile 2025</span>
-                        </div>
+                      <div className="flex items-center gap-6">
+                        {['Privacy', 'Terms', 'Contact'].map((item) => (
+                          <a 
+                            key={item}
+                            href="#" 
+                            className="text-sm text-gray-500 hover:text-[#35D07F] transition-colors duration-300 font-medium relative group"
+                          >
+                            {item}
+                            <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-[#35D07F] to-[#FCFF52] group-hover:w-full transition-all duration-500" />
+                          </a>
+                        ))}
                       </div>
                     </div>
                   </div>
@@ -199,6 +390,19 @@ export default function RootLayout({
             </footer>
           </div>
         </Web3Provider>
+
+        <style jsx>{`
+          @keyframes slideInUp {
+            from {
+              opacity: 0;
+              transform: translateY(20px) scale(0.95);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0) scale(1);
+            }
+          }
+        `}</style>
       </body>
     </html>
   );

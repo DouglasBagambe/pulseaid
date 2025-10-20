@@ -161,7 +161,7 @@ export default function BadgesPage() {
                   Start your journey by donating to campaigns and earn your first badge NFT!
                 </p>
                 <a
-                  href="/"
+                  href="/campaigns"
                   className="inline-block px-8 py-4 rounded-2xl bg-gradient-to-r from-[#35D07F] to-[#2AB56F] text-black font-semibold hover:shadow-lg hover:shadow-[#35D07F]/30 transition-all duration-300 transform hover:scale-105"
                 >
                   Browse Campaigns
