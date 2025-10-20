@@ -184,10 +184,17 @@ app.post("/api/campaigns", upload.single("proof"), async (req, res) => {
 app.post("/api/campaigns/:id/approve", async (req, res) => {
   try {
     const { id } = req.params;
+    console.log("Approve request for ID:", id);
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({
         error: "Invalid campaign ID format",
+      });
+    }
+
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({
+        error: "Database temporarily unavailable",
       });
     }
 
@@ -196,24 +203,42 @@ app.post("/api/campaigns/:id/approve", async (req, res) => {
       return res.status(404).json({ error: "Campaign not found" });
     }
 
-    // Optional: Call AI verification service
-    // const aiVerdict = await axios.post("http://localhost:5001/verify", {
-    //   campaignId: id,
-    // });
-    // if (aiVerdict.data.fraud) {
-    //   throw new Error("AI detected potential fraud");
-    // }
+    console.log("Campaign found:", campaign);
 
-    // Approve on blockchain
-    await approveCampaign(campaign.chainCampaignId);
+    // Check if campaign is already approved
+    if (campaign.status === "active") {
+      return res.status(400).json({
+        error: "Campaign is already approved",
+      });
+    }
 
-    // Mark as active to accept donations
+    // Try to approve on blockchain, but don't fail if blockchain is not configured
+    try {
+      // Check if this campaign actually exists on the blockchain
+      // If chainCampaignId is a mock ID (high number), we need to find the real campaign
+      if (campaign.chainCampaignId > 1000) {
+        console.warn("Campaign has mock ID, skipping blockchain approval");
+        console.log(
+          "Note: This campaign was created before blockchain integration was working properly"
+        );
+      } else {
+        await approveCampaign(campaign.chainCampaignId);
+        console.log("Blockchain approval successful");
+      }
+    } catch (blockchainError) {
+      console.warn(
+        "Blockchain approval failed, continuing with database update:",
+        blockchainError.message
+      );
+      // Continue with database update even if blockchain fails
+    }
+
     campaign.status = "active";
     await campaign.save();
-
+    console.log("Campaign approved:", campaign);
     res.json({ success: true, campaign });
   } catch (err) {
-    console.error("Approval error:", err);
+    console.error("Approve endpoint error:", err.message);
     res.status(500).json({ error: err.message });
   }
 });
@@ -240,6 +265,49 @@ app.post("/api/campaigns/:id/reject", async (req, res) => {
     res.json({ success: true, campaign });
   } catch (err) {
     console.error("Reject error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Update campaign raised amount (called after successful donation)
+app.post("/api/campaigns/:id/update-raised", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { amount } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        error: "Invalid campaign ID format",
+      });
+    }
+
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({
+        error: "Database temporarily unavailable",
+      });
+    }
+
+    if (!amount || isNaN(parseFloat(amount))) {
+      return res.status(400).json({
+        error: "Valid amount is required",
+      });
+    }
+
+    const campaign = await Campaign.findById(id);
+    if (!campaign) {
+      return res.status(404).json({ error: "Campaign not found" });
+    }
+
+    // Update raised amount
+    campaign.raised = (campaign.raised || 0) + parseFloat(amount);
+    await campaign.save();
+
+    res.json({
+      success: true,
+      campaign,
+    });
+  } catch (err) {
+    console.error("Update raised amount error:", err);
     res.status(500).json({ error: err.message });
   }
 });

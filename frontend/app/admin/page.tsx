@@ -86,8 +86,11 @@ export default function AdminPage() {
       const res = await axios.post(`${base}/api/campaigns/${id}/approve`);
       const updated: Campaign = res.data?.campaign;
       setCampaigns((prev) => prev.map((c) => (c._id === id ? updated : c)));
+      console.log("Campaign approved successfully:", updated);
     } catch (e: unknown) {
-      alert(getErrorMessage(e, "Approve failed"));
+      const errorMessage = getErrorMessage(e, "Approve failed");
+      console.error("Approve error:", e);
+      alert(`Approve failed: ${errorMessage}`);
     } finally {
       setActionLoadingId(null);
     }
@@ -101,8 +104,11 @@ export default function AdminPage() {
       const res = await axios.post(`${base}/api/campaigns/${id}/reject`);
       const updated: Campaign = res.data?.campaign;
       setCampaigns((prev) => prev.map((c) => (c._id === id ? updated : c)));
+      console.log("Campaign rejected successfully:", updated);
     } catch (e: unknown) {
-      alert(getErrorMessage(e, "Reject failed"));
+      const errorMessage = getErrorMessage(e, "Reject failed");
+      console.error("Reject error:", e);
+      alert(`Reject failed: ${errorMessage}`);
     } finally {
       setActionLoadingId(null);
     }

@@ -54,6 +54,10 @@ export default function Home() {
     router.push(`/campaign/${id}`);
   }
 
+  function handleCardClick(id: string) {
+    router.push(`/campaign/${id}`);
+  }
+
   return (
     <div className="min-h-screen text-white">
       {/* Hero Section with Animated Gradient */}
@@ -81,8 +85,8 @@ export default function Home() {
             </h1>
 
             <p className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed">
-              Transparent crowdfunding for real human crises. Every
-              donation tracked on-chain with AI-powered fraud detection.
+              Transparent crowdfunding for real human crises. Every donation
+              tracked on-chain with AI-powered fraud detection.
             </p>
 
             {/* CTA Buttons */}
@@ -272,7 +276,11 @@ export default function Home() {
                   description={c.description}
                   goal={c.goal}
                   raised={c.raised || 0}
+                  deadline={c.deadline}
+                  mode={c.mode}
+                  status={c.status}
                   onDonate={handleDonate}
+                  onClick={handleCardClick}
                 />
               ))}
           </div>

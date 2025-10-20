@@ -1,6 +1,8 @@
 "use client";
 import React, { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import axios from "axios";
+import CampaignCard from "@/components/CampaignCard";
 
 interface Campaign {
   _id: string;
@@ -55,17 +57,46 @@ export default function CampaignsPage() {
   async function loadCampaigns() {
     try {
       setLoading(true);
-      const base = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
-      const res = await fetch(`${base}/api/campaigns`);
-      const data = await res.json();
-      
+      const base =
+        process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
+      console.log("Attempting to fetch from:", `${base}/api/campaigns`);
+
+      const res = await axios.get(`${base}/api/campaigns`, {
+        timeout: 10000, // 10 second timeout
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const data = res.data;
+
+      console.log("Backend response:", data); // Debug log
+
       if (data.success && Array.isArray(data.campaigns)) {
         setCampaigns(data.campaigns);
       } else {
+        console.warn("Unexpected response structure:", data);
         setCampaigns([]);
       }
     } catch (err) {
       console.error("Failed to load campaigns:", err);
+      if (axios.isAxiosError(err)) {
+        if (err.code === "ECONNREFUSED") {
+          console.error(
+            "Backend server is not running. Please start it with: cd backend && npm run dev"
+          );
+        } else if (err.code === "NETWORK_ERROR") {
+          console.error(
+            "Network error. Check your internet connection and backend URL."
+          );
+        } else {
+          console.error(
+            "Axios error:",
+            err.message,
+            "Status:",
+            err.response?.status
+          );
+        }
+      }
       setCampaigns([]);
     } finally {
       setLoading(false);
@@ -138,13 +169,16 @@ export default function CampaignsPage() {
     const totalRaised = campaigns.reduce((sum, c) => sum + (c.raised || 0), 0);
     const avgProgress =
       campaigns.length > 0
-        ? campaigns.reduce((sum, c) => sum + ((c.raised || 0) / c.goal) * 100, 0) / campaigns.length
+        ? campaigns.reduce(
+            (sum, c) => sum + ((c.raised || 0) / c.goal) * 100,
+            0
+          ) / campaigns.length
         : 0;
     return { active, totalRaised, avgProgress };
   }, [campaigns]);
 
   function handleDonate(id: string) {
-    console.log("Donate to:", id);
+    router.push(`/campaign/${id}`);
   }
 
   function handleCardClick(id: string) {
@@ -157,27 +191,34 @@ export default function CampaignsPage() {
         <div className="absolute inset-0 bg-gradient-to-br from-[#FCFF52]/5 via-[#35D07F]/5 to-[#0B1020]" />
         <div className="absolute top-20 right-10 w-96 h-96 bg-[#35D07F]/10 rounded-full blur-3xl animate-pulse" />
         <div className="absolute bottom-10 left-10 w-96 h-96 bg-[#FCFF52]/10 rounded-full blur-3xl animate-pulse" />
-        
+
         <div className="relative container mx-auto px-4 py-16">
           <div className="max-w-3xl">
             <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-[#FCFF52] via-[#35D07F] to-[#FCFF52] bg-clip-text text-transparent">
               Explore Campaigns
             </h1>
             <p className="text-gray-400 text-lg mb-8">
-              Discover meaningful causes and make a difference with transparent, blockchain-powered donations
+              Discover meaningful causes and make a difference with transparent,
+              blockchain-powered donations
             </p>
 
             <div className="grid grid-cols-3 gap-4">
               <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-4">
-                <div className="text-2xl font-bold text-[#35D07F] mb-1">{stats.active}</div>
+                <div className="text-2xl font-bold text-[#35D07F] mb-1">
+                  {stats.active}
+                </div>
                 <div className="text-xs text-gray-400">Active Now</div>
               </div>
               <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-4">
-                <div className="text-2xl font-bold text-[#FCFF52] mb-1">{stats.totalRaised.toFixed(0)}</div>
+                <div className="text-2xl font-bold text-[#FCFF52] mb-1">
+                  {stats.totalRaised.toFixed(0)}
+                </div>
                 <div className="text-xs text-gray-400">Total Raised (CELO)</div>
               </div>
               <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-4">
-                <div className="text-2xl font-bold text-white mb-1">{stats.avgProgress.toFixed(0)}%</div>
+                <div className="text-2xl font-bold text-white mb-1">
+                  {stats.avgProgress.toFixed(0)}%
+                </div>
                 <div className="text-xs text-gray-400">Avg Progress</div>
               </div>
             </div>
@@ -195,16 +236,37 @@ export default function CampaignsPage() {
               placeholder="Search campaigns by title, description, or ID..."
               className="w-full bg-white/5 border border-white/10 rounded-2xl pl-12 pr-4 py-3.5 focus:outline-none focus:border-[#35D07F] focus:bg-white/10 transition-all duration-300 text-white placeholder-gray-500"
             />
-            <svg className="w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            <svg
+              className="w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
             </svg>
             {search && (
               <button
                 onClick={() => setSearch("")}
                 className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                title="Clear search"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             )}
@@ -249,9 +311,14 @@ export default function CampaignsPage() {
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
               className="bg-white/5 border border-white/10 rounded-2xl px-4 py-2 text-sm font-semibold text-white focus:outline-none focus:border-[#35D07F] transition-all cursor-pointer"
+              title="Sort campaigns"
             >
               {SORT_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value} className="bg-[#0B1020]">
+                <option
+                  key={opt.value}
+                  value={opt.value}
+                  className="bg-[#0B1020]"
+                >
                   {opt.label}
                 </option>
               ))}
@@ -261,29 +328,60 @@ export default function CampaignsPage() {
               <button
                 onClick={() => setViewMode("grid")}
                 className={`p-2 rounded-xl transition-all ${
-                  viewMode === "grid" ? "bg-white/10 text-[#35D07F]" : "text-gray-400 hover:text-white"
+                  viewMode === "grid"
+                    ? "bg-white/10 text-[#35D07F]"
+                    : "text-gray-400 hover:text-white"
                 }`}
+                title="Grid view"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
+                  />
                 </svg>
               </button>
               <button
                 onClick={() => setViewMode("list")}
                 className={`p-2 rounded-xl transition-all ${
-                  viewMode === "list" ? "bg-white/10 text-[#35D07F]" : "text-gray-400 hover:text-white"
+                  viewMode === "list"
+                    ? "bg-white/10 text-[#35D07F]"
+                    : "text-gray-400 hover:text-white"
                 }`}
+                title="List view"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
                 </svg>
               </button>
             </div>
           </div>
 
           <div className="mt-4 text-sm text-gray-400">
-            Showing <span className="text-white font-semibold">{filteredAndSorted.length}</span> of{" "}
-            <span className="text-white font-semibold">{campaigns.length}</span> campaigns
+            Showing{" "}
+            <span className="text-white font-semibold">
+              {filteredAndSorted.length}
+            </span>{" "}
+            of{" "}
+            <span className="text-white font-semibold">{campaigns.length}</span>{" "}
+            campaigns
           </div>
         </div>
       </section>
@@ -297,12 +395,26 @@ export default function CampaignsPage() {
         ) : filteredAndSorted.length === 0 ? (
           <div className="text-center py-20">
             <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-[#35D07F]/20 to-[#FCFF52]/20 flex items-center justify-center mx-auto mb-6">
-              <svg className="w-12 h-12 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M12 12h.01M12 12h.01M12 12h.01M12 21a9 9 0 100-18 9 9 0 000 18z" />
+              <svg
+                className="w-12 h-12 text-gray-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M12 12h.01M12 12h.01M12 12h.01M12 21a9 9 0 100-18 9 9 0 000 18z"
+                />
               </svg>
             </div>
-            <h3 className="text-2xl font-bold text-white mb-2">No campaigns found</h3>
-            <p className="text-gray-400 mb-6">Try adjusting your filters or search terms</p>
+            <h3 className="text-2xl font-bold text-white mb-2">
+              No campaigns found
+            </h3>
+            <p className="text-gray-400 mb-6">
+              Try adjusting your filters or search terms
+            </p>
             <button
               onClick={() => {
                 setSearch("");
@@ -315,105 +427,28 @@ export default function CampaignsPage() {
             </button>
           </div>
         ) : (
-          <div className={viewMode === "grid" 
-            ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" 
-            : "flex flex-col gap-4"
-          }>
-            {filteredAndSorted.map((campaign) => {
-              const pct = Math.min(100, ((campaign.raised || 0) / campaign.goal) * 100);
-              const isEscrow = campaign.mode === 1;
-              const daysRemaining = campaign.deadline 
-                ? Math.max(0, Math.floor((campaign.deadline - Date.now() / 1000) / 86400))
-                : null;
-
-              return (
-                <div
-                  key={campaign._id}
-                  onClick={() => handleCardClick(campaign._id)}
-                  className="relative group cursor-pointer"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-br from-[#35D07F]/0 via-[#FCFF52]/0 to-[#35D07F]/0 group-hover:from-[#35D07F]/20 group-hover:via-[#FCFF52]/10 group-hover:to-[#35D07F]/20 rounded-2xl blur-xl transition-all duration-500" />
-                  
-                  <div className="relative bg-white/5 backdrop-blur-md border border-white/10 group-hover:border-[#35D07F]/30 rounded-2xl overflow-hidden transition-all duration-300 transform group-hover:scale-[1.02]">
-                    <div className="absolute top-4 left-4 flex gap-2 z-10">
-                      <span className={`px-3 py-1.5 rounded-full text-xs font-bold backdrop-blur-md ${
-                        isEscrow 
-                          ? "bg-[#35D07F]/20 border border-[#35D07F]/40 text-[#35D07F]" 
-                          : "bg-[#FCFF52]/20 border border-[#FCFF52]/40 text-[#FCFF52]"
-                      }`}>
-                        {isEscrow ? "🛡️ Escrow" : "💛 Kindness"}
-                      </span>
-                      {campaign.status === "pending" && (
-                        <span className="px-3 py-1.5 rounded-full text-xs font-bold backdrop-blur-md bg-orange-500/20 border border-orange-500/40 text-orange-300">
-                          ⏳ Pending
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="p-6 pt-16">
-                      <h3 className="text-xl font-bold text-white mb-2 line-clamp-2 group-hover:text-[#FCFF52] transition-colors duration-300">
-                        {campaign.title}
-                      </h3>
-                      
-                      <p className="text-gray-400 text-sm line-clamp-3 mb-6 leading-relaxed">
-                        {campaign.description || "No description provided"}
-                      </p>
-
-                      <div className="mb-4">
-                        <div className="flex items-center justify-between text-sm mb-2">
-                          <span className="text-gray-400 font-medium">Progress</span>
-                          <span className="text-white font-bold">{pct.toFixed(0)}%</span>
-                        </div>
-                        <div className="relative h-3 bg-white/5 rounded-full overflow-hidden">
-                          <div 
-                            className="absolute inset-0 bg-gradient-to-r from-[#35D07F] via-[#FCFF52]/50 to-[#35D07F]"
-                            style={{ width: `${pct}%` }}
-                          />
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-3 mb-5">
-                        <div className="bg-white/5 rounded-xl p-3 border border-white/10">
-                          <div className="text-xs text-gray-400 mb-1">Raised</div>
-                          <div className="text-lg font-bold text-[#35D07F]">{(campaign.raised || 0).toFixed(2)}</div>
-                          <div className="text-xs text-gray-500">CELO</div>
-                        </div>
-                        <div className="bg-white/5 rounded-xl p-3 border border-white/10">
-                          <div className="text-xs text-gray-400 mb-1">Goal</div>
-                          <div className="text-lg font-bold text-white">{campaign.goal.toFixed(2)}</div>
-                          <div className="text-xs text-gray-500">CELO</div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between pt-4 border-t border-white/10">
-                        {daysRemaining !== null && (
-                          <div className="flex items-center gap-2 text-sm">
-                            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <span className={daysRemaining < 7 ? "text-red-400 font-semibold" : "text-gray-400"}>
-                              {daysRemaining === 0 ? "Last day!" : `${daysRemaining} days left`}
-                            </span>
-                          </div>
-                        )}
-                        
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDonate(campaign._id);
-                          }}
-                          className="ml-auto px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#35D07F] to-[#2AB56F] text-black font-bold hover:shadow-lg hover:shadow-[#35D07F]/50 transition-all duration-300 transform hover:scale-105 active:scale-95"
-                        >
-                          Donate Now
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-[#35D07F] via-[#FCFF52] to-[#35D07F] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
-                  </div>
-                </div>
-              );
-            })}
+          <div
+            className={
+              viewMode === "grid"
+                ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                : "flex flex-col gap-4"
+            }
+          >
+            {filteredAndSorted.map((campaign) => (
+              <CampaignCard
+                key={campaign._id}
+                id={campaign._id}
+                title={campaign.title}
+                description={campaign.description}
+                goal={campaign.goal}
+                raised={campaign.raised || 0}
+                deadline={campaign.deadline}
+                mode={campaign.mode}
+                status={campaign.status}
+                onDonate={handleDonate}
+                onClick={handleCardClick}
+              />
+            ))}
           </div>
         )}
       </section>
@@ -426,7 +461,8 @@ export default function CampaignsPage() {
               Ready to Make a Difference?
             </h2>
             <p className="text-gray-400 text-lg mb-8 max-w-2xl mx-auto">
-              Start your own campaign or support existing causes. Every contribution is tracked transparently on the blockchain.
+              Start your own campaign or support existing causes. Every
+              contribution is tracked transparently on the blockchain.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a
@@ -436,7 +472,7 @@ export default function CampaignsPage() {
                 Create Campaign
               </a>
               <button
-                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
                 className="px-8 py-4 rounded-2xl bg-white/5 backdrop-blur-sm text-white font-bold hover:bg-white/10 transition-all duration-300 border border-white/10"
               >
                 Back to Top

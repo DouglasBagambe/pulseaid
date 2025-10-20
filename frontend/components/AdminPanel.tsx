@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
@@ -28,11 +30,14 @@ export default function AdminPanel() {
 
   async function loadCampaigns() {
     try {
+      setLoading(true);
       const base = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
+      console.log(`[AdminPanel] Fetching campaigns from: ${base}/api/campaigns`);
       const res = await axios.get(`${base}/api/campaigns`);
-      setItems(res.data || []);
+      console.log('[AdminPanel] Campaigns response:', res.data);
+      setItems(res.data?.campaigns || []);
     } catch (err) {
-      console.error("Failed to load campaigns:", err);
+      console.error('[AdminPanel] Load campaigns error:', err);
     } finally {
       setLoading(false);
     }
@@ -43,19 +48,17 @@ export default function AdminPanel() {
     try {
       const base = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
       const token = process.env.NEXT_PUBLIC_ADMIN_JWT || "";
-      
-      await axios.post(
+      console.log(`[AdminPanel] ${action} campaign ID: ${c._id}, chain ID: ${c.chainCampaignId}`);
+      const res = await axios.post(
         `${base}/api/campaigns/${c._id}/${action}`,
         {},
-        {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        }
+        { headers: token ? { Authorization: `Bearer ${token}` } : {} }
       );
-      
+      console.log(`[AdminPanel] ${action} response:`, res.data);
       alert(`Campaign ${action}d successfully!`);
       await loadCampaigns();
     } catch (err: any) {
-      console.error(`Failed to ${action}:`, err);
+      console.error(`[AdminPanel] ${action} error:`, err.response?.data || err.message);
       alert(`Failed to ${action}: ${err.response?.data?.message || err.message}`);
     } finally {
       setProcessing(null);
@@ -180,7 +183,6 @@ function CampaignCard({
         </div>
       </div>
 
-      {/* AI Verification */}
       {campaign.aiVerification && (
         <div className="mb-4 p-3 rounded-lg bg-[#0F62FE]/10 border border-[#0F62FE]/30">
           <div className="flex items-center justify-between text-sm">
@@ -203,7 +205,6 @@ function CampaignCard({
         </div>
       )}
 
-      {/* Proof Link */}
       {campaign.ipfsCid && (
         <div className="mb-4">
           <a
@@ -217,7 +218,6 @@ function CampaignCard({
         </div>
       )}
 
-      {/* Action Buttons */}
       {onApprove && onReject && (
         <div className="flex gap-3 pt-4 border-t border-gray-800">
           <button
