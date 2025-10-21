@@ -73,32 +73,27 @@ export default function RootLayout({
               }`}
             >
               
-              <div className="container mx-auto px-4 lg:px-8">
-                <div className="flex items-center justify-between h-24">
-                  {/* MEGA Logo */}
+              <div className="container mx-auto px-4">
+                <div className="flex items-center justify-between h-16 lg:h-20">
+                  {/* Logo - Mobile Optimized */}
                   <Link 
                     href="/" 
-                    className="flex items-center gap-4 group relative z-10"
+                    className="flex items-center gap-2 lg:gap-3 group"
                   >
-                    <div className="relative">
-                      {/* Logo container - clean */}
-                      <div className="relative w-14 h-14 rounded-xl bg-gradient-to-br from-[#35D07F] to-[#2AB56F] p-[1px] transform group-hover:scale-105 transition-all duration-200">
-                        <div className="w-full h-full bg-[#0B1020] rounded-xl flex items-center justify-center">
-                          <img 
-                            src="/logo.svg" 
-                            alt="PulseAid" 
-                            className="w-8 h-8 object-contain"
-                          />
-                        </div>
+                    <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-lg lg:rounded-xl bg-gradient-to-br from-[#35D07F] to-[#2AB56F] p-[1px]">
+                      <div className="w-full h-full bg-[#0B1020] rounded-lg lg:rounded-xl flex items-center justify-center">
+                        <img 
+                          src="/logo.svg" 
+                          alt="PulseAid" 
+                          className="w-6 h-6 lg:w-7 lg:h-7 object-contain"
+                        />
                       </div>
                     </div>
-                    
-                    {/* Brand text */}
-                    <div className="hidden sm:block">
-                      <h1 className="text-xl font-bold text-white">
+                    <div>
+                      <h1 className="text-base lg:text-lg font-bold text-white">
                         PulseAid
                       </h1>
-                      <p className="text-xs text-gray-400">
+                      <p className="text-[10px] lg:text-xs text-gray-400 hidden sm:block">
                         Celo Powered
                       </p>
                     </div>
@@ -183,36 +178,35 @@ export default function RootLayout({
                     </div>
                   </nav>
 
-                  {/* Right side with epic styling */}
-                  <div className="flex items-center gap-4">
-                    <div className="hidden sm:block">
+                  {/* Right side - Mobile Optimized */}
+                  <div className="flex items-center gap-2 lg:gap-4">
+                    {/* Wallet Connector - Mobile Friendly */}
+                    <div className="scale-90 lg:scale-100">
                       <WalletConnector />
                     </div>
 
-                    {/* Mobile Menu Button */}
+                    {/* Mobile Menu Button - Cleaner */}
                     <button 
                       onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                      className="lg:hidden relative group"
-                      aria-label="Toggle menu"
+                      className="lg:hidden p-2 rounded-xl bg-white/5 border border-white/10 active:scale-95 transition-transform"
+                      aria-label="Menu"
                     >
-                      <div className="relative p-3 rounded-2xl bg-gradient-to-br from-[#35D07F] to-[#FCFF52] hover:scale-105 transition-transform duration-200">
-                        <div className="w-6 h-6 flex flex-col items-center justify-center gap-1.5">
-                          <span 
-                            className={`w-6 h-0.5 bg-black rounded-full transition-all duration-500 ${
-                              mobileMenuOpen ? 'rotate-45 translate-y-2' : ''
-                            }`}
-                          />
-                          <span 
-                            className={`w-6 h-0.5 bg-black rounded-full transition-all duration-300 ${
-                              mobileMenuOpen ? 'opacity-0 scale-0' : ''
-                            }`}
-                          />
-                          <span 
-                            className={`w-6 h-0.5 bg-black rounded-full transition-all duration-500 ${
-                              mobileMenuOpen ? '-rotate-45 -translate-y-2' : ''
-                            }`}
-                          />
-                        </div>
+                      <div className="w-5 h-5 flex flex-col items-center justify-center gap-1">
+                        <span 
+                          className={`w-5 h-0.5 bg-white rounded-full transition-all duration-300 ${
+                            mobileMenuOpen ? 'rotate-45 translate-y-1.5' : ''
+                          }`}
+                        />
+                        <span 
+                          className={`w-5 h-0.5 bg-white rounded-full transition-all duration-200 ${
+                            mobileMenuOpen ? 'opacity-0' : ''
+                          }`}
+                        />
+                        <span 
+                          className={`w-5 h-0.5 bg-white rounded-full transition-all duration-300 ${
+                            mobileMenuOpen ? '-rotate-45 -translate-y-1.5' : ''
+                          }`}
+                        />
                       </div>
                     </button>
                   </div>
@@ -297,7 +291,7 @@ export default function RootLayout({
             />
 
             {/* Main Content */}
-            <main className="flex-1 relative z-10 pt-24">{children}</main>
+            <main className="flex-1 relative z-10 pt-16 lg:pt-20">{children}</main>
 
             {/* Footer */}
             <footer className="relative mt-32 z-10 border-t border-white/5">

@@ -185,84 +185,80 @@ export default function MyCampaignsPage() {
             </div>
           ) : (
             <>
-              {/* Search and Filters - EXACT COPY from campaigns */}
-              <div className="sticky top-24 z-40 bg-[#0B1020]/80 backdrop-blur-xl border-b border-white/10 -mx-4 px-4 py-4 mb-8">
-                <div className="relative mb-4">
+              {/* Search and Filters - Mobile First */}
+              <div className="mb-6">
+                {/* Search Bar */}
+                <div className="relative mb-3">
                   <input
                     type="text"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Search campaigns by title, description, or ID..."
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl pl-12 pr-4 py-3.5 focus:outline-none focus:border-[#35D07F] focus:bg-white/10 transition-all duration-300 text-white placeholder-gray-500"
+                    placeholder="Search campaigns..."
+                    className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-10 py-3 text-sm focus:outline-none focus:border-[#35D07F] text-white placeholder-gray-400"
                   />
                   <svg
-                    className="w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2"
+                    className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                    />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                   {search && (
                     <button
                       onClick={() => setSearch("")}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
                     >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                       </svg>
                     </button>
                   )}
                 </div>
 
-                <div className="flex flex-wrap items-center gap-3">
-                  <div className="flex gap-2 bg-white/5 border border-white/10 rounded-2xl p-1">
-                    {STATUS_FILTERS.map((f) => (
-                      <button
-                        key={f.value}
-                        onClick={() => setStatusFilter(f.value)}
-                        className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 whitespace-nowrap ${
-                          statusFilter === f.value
-                            ? "bg-gradient-to-r from-[#35D07F] to-[#2AB56F] text-black"
-                            : "text-gray-300 hover:text-white hover:bg-white/10"
-                        }`}
-                      >
-                        {f.label}
-                      </button>
-                    ))}
-                  </div>
+                {/* Filters - Mobile Scrollable */}
+                <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
+                  {/* Status Filters */}
+                  {STATUS_FILTERS.map((f) => (
+                    <button
+                      key={f.value}
+                      onClick={() => setStatusFilter(f.value)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
+                        statusFilter === f.value
+                          ? "bg-gradient-to-r from-[#35D07F] to-[#2AB56F] text-black"
+                          : "bg-white/5 text-gray-300 border border-white/10"
+                      }`}
+                    >
+                      {f.label}
+                    </button>
+                  ))}
+                  
+                  {/* Mode Filters */}
+                  {MODE_FILTERS.map((f) => (
+                    <button
+                      key={f.value}
+                      onClick={() => setModeFilter(f.value)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
+                        modeFilter === f.value
+                          ? "bg-gradient-to-r from-[#FCFF52] to-[#E5E84A] text-black"
+                          : "bg-white/5 text-gray-300 border border-white/10"
+                      }`}
+                    >
+                      {f.label}
+                    </button>
+                  ))}
+                </div>
 
-                  <div className="flex gap-2 bg-white/5 border border-white/10 rounded-2xl p-1">
-                    {MODE_FILTERS.map((f) => (
-                      <button
-                        key={f.value}
-                        onClick={() => setModeFilter(f.value)}
-                        className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 whitespace-nowrap ${
-                          modeFilter === f.value
-                            ? "bg-gradient-to-r from-[#FCFF52] to-[#E5E84A] text-black"
-                            : "text-gray-300 hover:text-white hover:bg-white/10"
-                        }`}
-                      >
-                        {f.label}
-                      </button>
-                    ))}
-                  </div>
-
-                  <div className="flex-1" />
-
+                {/* Sort Dropdown */}
+                <div className="mt-3">
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value)}
-                    className="bg-white/5 border border-white/10 rounded-2xl px-4 py-2 text-sm font-semibold text-white focus:outline-none focus:border-[#35D07F] transition-all cursor-pointer"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-[#35D07F]"
                   >
                     {SORT_OPTIONS.map((opt) => (
                       <option key={opt.value} value={opt.value} className="bg-[#0B1020]">
-                        {opt.label}
+                        Sort: {opt.label}
                       </option>
                     ))}
                   </select>

@@ -213,152 +213,81 @@ export default function CampaignsPage() {
         </div>
       </section>
 
-      <section className="sticky top-0 z-40 bg-[#0B1020]/80 backdrop-blur-xl border-b border-white/10">
-        <div className="container mx-auto px-4 py-4">
-          <div className="relative mb-4">
+      <section className="sticky top-16 lg:top-20 z-40 bg-[#0B1020]/95 backdrop-blur-xl border-b border-white/10">
+        <div className="container mx-auto px-4 py-3 lg:py-4">
+          {/* Search Bar - Mobile First */}
+          <div className="relative mb-3">
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search campaigns by title, description, or ID..."
-              className="w-full bg-white/5 border border-white/10 rounded-2xl pl-12 pr-4 py-3.5 focus:outline-none focus:border-[#35D07F] focus:bg-white/10 transition-all duration-300 text-white placeholder-gray-500"
+              placeholder="Search campaigns..."
+              className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-10 py-2.5 lg:py-3 text-sm focus:outline-none focus:border-[#35D07F] text-white placeholder-gray-400"
             />
             <svg
-              className="w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2"
+              className="w-4 h-4 lg:w-5 lg:h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
             {search && (
               <button
                 onClick={() => setSearch("")}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
-                title="Clear search"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
               >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             )}
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="flex gap-2 bg-white/5 border border-white/10 rounded-2xl p-1">
-              {STATUS_FILTERS.map((f) => (
-                <button
-                  key={f.value}
-                  onClick={() => setStatusFilter(f.value)}
-                  className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 whitespace-nowrap ${
-                    statusFilter === f.value
-                      ? "bg-gradient-to-r from-[#35D07F] to-[#2AB56F] text-black"
-                      : "text-gray-300 hover:text-white hover:bg-white/10"
-                  }`}
-                >
-                  {f.icon} {f.label}
-                </button>
-              ))}
-            </div>
+          {/* Filters - Mobile Scrollable */}
+          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+            {STATUS_FILTERS.map((f) => (
+              <button
+                key={f.value}
+                onClick={() => setStatusFilter(f.value)}
+                className={`px-3 py-1.5 lg:px-4 lg:py-2 rounded-lg text-xs lg:text-sm font-semibold whitespace-nowrap transition-all ${
+                  statusFilter === f.value
+                    ? "bg-gradient-to-r from-[#35D07F] to-[#2AB56F] text-black"
+                    : "bg-white/5 text-gray-300 border border-white/10"
+                }`}
+              >
+                {f.label}
+              </button>
+            ))}
+            
+            {MODE_FILTERS.map((f) => (
+              <button
+                key={f.value}
+                onClick={() => setModeFilter(f.value)}
+                className={`px-3 py-1.5 lg:px-4 lg:py-2 rounded-lg text-xs lg:text-sm font-semibold whitespace-nowrap transition-all ${
+                  modeFilter === f.value
+                    ? "bg-gradient-to-r from-[#FCFF52] to-[#E5E84A] text-black"
+                    : "bg-white/5 text-gray-300 border border-white/10"
+                }`}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
 
-            <div className="flex gap-2 bg-white/5 border border-white/10 rounded-2xl p-1">
-              {MODE_FILTERS.map((f) => (
-                <button
-                  key={f.value}
-                  onClick={() => setModeFilter(f.value)}
-                  className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 whitespace-nowrap ${
-                    modeFilter === f.value
-                      ? "bg-gradient-to-r from-[#FCFF52] to-[#E5E84A] text-black"
-                      : "text-gray-300 hover:text-white hover:bg-white/10"
-                  }`}
-                >
-                  {f.icon} {f.label}
-                </button>
-              ))}
-            </div>
-
-            <div className="flex-1" />
-
+          {/* Sort - Mobile Full Width */}
+          <div className="mt-3">
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="bg-white/5 border border-white/10 rounded-2xl px-4 py-2 text-sm font-semibold text-white focus:outline-none focus:border-[#35D07F] transition-all cursor-pointer"
-              title="Sort campaigns"
+              className="w-full lg:w-auto bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-[#35D07F]"
             >
               {SORT_OPTIONS.map((opt) => (
-                <option
-                  key={opt.value}
-                  value={opt.value}
-                  className="bg-[#0B1020]"
-                >
-                  {opt.label}
+                <option key={opt.value} value={opt.value} className="bg-[#0B1020]">
+                  Sort: {opt.label}
                 </option>
               ))}
             </select>
-
-            <div className="flex gap-1 bg-white/5 border border-white/10 rounded-2xl p-1">
-              <button
-                onClick={() => setViewMode("grid")}
-                className={`p-2 rounded-xl transition-all ${
-                  viewMode === "grid"
-                    ? "bg-white/10 text-[#35D07F]"
-                    : "text-gray-400 hover:text-white"
-                }`}
-                title="Grid view"
-              >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
-                  />
-                </svg>
-              </button>
-              <button
-                onClick={() => setViewMode("list")}
-                className={`p-2 rounded-xl transition-all ${
-                  viewMode === "list"
-                    ? "bg-white/10 text-[#35D07F]"
-                    : "text-gray-400 hover:text-white"
-                }`}
-                title="List view"
-              >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
-                </svg>
-              </button>
-            </div>
           </div>
 
           <div className="mt-4 text-sm text-gray-400">
