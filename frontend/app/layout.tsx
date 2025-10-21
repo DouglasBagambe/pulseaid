@@ -26,6 +26,7 @@ export default function RootLayout({
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [meDropdownOpen, setMeDropdownOpen] = useState(false);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -40,11 +41,16 @@ export default function RootLayout({
     { href: "/", label: "Home" },
     { href: "/create", label: "Create" },
     { href: "/campaigns", label: "Campaigns" },
-    { href: "/badges", label: "Badges" },
     { href: "/admin", label: "Admin" },
   ];
 
+  const meLinks = [
+    { href: "/my-campaigns", label: "My Campaigns", icon: "📊" },
+    { href: "/badges", label: "My Badges", icon: "🏆" },
+  ];
+
   const isActive = (href: string) => pathname === href;
+  const isMeActive = meLinks.some(link => pathname === link.href);
 
   return (
     <html lang="en">
@@ -77,18 +83,18 @@ export default function RootLayout({
                     className="flex items-center gap-4 group relative z-10"
                   >
                     <div className="relative">
-                      {/* Glow layer - toned down */}
-                      <div className="absolute -inset-4 bg-gradient-to-r from-[#35D07F] via-[#FCFF52] to-[#35D07F] rounded-full opacity-20 group-hover:opacity-30 blur-xl transition-all duration-500" />
+                      {/* Glow layer - subtle */}
+                      <div className="absolute -inset-3 bg-gradient-to-r from-[#35D07F] via-[#FCFF52] to-[#35D07F] rounded-full opacity-10 group-hover:opacity-15 blur-lg transition-all duration-500" />
                       
                       {/* Logo container with glassmorphism */}
-                      <div className="relative w-16 h-16 rounded-2xl bg-gradient-to-br from-[#35D07F] via-[#FCFF52] to-[#35D07F] p-[3px] transform group-hover:scale-105 transition-all duration-300">
-                        <div className="w-full h-full bg-[#0B1020]/90 backdrop-blur-xl rounded-2xl flex items-center justify-center relative overflow-hidden">
+                      <div className="relative w-16 h-16 rounded-2xl bg-gradient-to-br from-[#35D07F] via-[#FCFF52] to-[#35D07F] p-[2px] transform group-hover:scale-105 transition-all duration-300">
+                        <div className="w-full h-full bg-[#0B1020]/95 backdrop-blur-xl rounded-2xl flex items-center justify-center relative overflow-hidden">
                           {/* Animated shine effect */}
-                          <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                          <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                           <img 
                             src="/logo.svg" 
                             alt="PulseAid" 
-                            className="w-9 h-9 object-contain relative z-10 drop-shadow-2xl"
+                            className="w-9 h-9 object-contain relative z-10 drop-shadow-lg"
                           />
                         </div>
                       </div>
@@ -118,15 +124,15 @@ export default function RootLayout({
                           href={link.href}
                           className="relative group"
                         >
-                          {/* Active indicator background */}
+                          {/* Active indicator background - toned down */}
                           {active && (
                             <>
                               <div className="absolute inset-0 bg-gradient-to-r from-[#35D07F] to-[#FCFF52] rounded-full" />
-                              <div className="absolute -inset-1 bg-gradient-to-r from-[#35D07F] to-[#FCFF52] rounded-full blur-lg opacity-50" />
+                              <div className="absolute -inset-0.5 bg-gradient-to-r from-[#35D07F] to-[#FCFF52] rounded-full blur-md opacity-30" />
                             </>
                           )}
                           
-                          <div className={`relative px-6 py-3 rounded-full font-semibold text-sm transition-all duration-500 ${
+                          <div className={`relative px-6 py-3 rounded-full font-semibold text-sm transition-all duration-300 ${
                             active 
                               ? 'text-black' 
                               : 'text-gray-400 hover:text-white'
@@ -136,14 +142,68 @@ export default function RootLayout({
                             {/* Hover effect for non-active items */}
                             {!active && (
                               <>
-                                <div className="absolute inset-0 bg-gradient-to-r from-[#35D07F]/20 to-[#FCFF52]/20 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-500" />
-                                <div className="absolute inset-0 border border-[#35D07F]/0 group-hover:border-[#35D07F]/50 rounded-full transition-all duration-500" />
+                                <div className="absolute inset-0 bg-gradient-to-r from-[#35D07F]/15 to-[#FCFF52]/15 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300" />
+                                <div className="absolute inset-0 border border-[#35D07F]/0 group-hover:border-[#35D07F]/30 rounded-full transition-all duration-300" />
                               </>
                             )}
                           </div>
                         </Link>
                       );
                     })}
+                    
+                    {/* Me Dropdown */}
+                    <div className="relative">
+                      <button
+                        onClick={() => setMeDropdownOpen(!meDropdownOpen)}
+                        className="relative group"
+                      >
+                        {/* Active indicator if on Me pages */}
+                        {isMeActive && (
+                          <>
+                            <div className="absolute inset-0 bg-gradient-to-r from-[#35D07F] to-[#FCFF52] rounded-full" />
+                            <div className="absolute -inset-0.5 bg-gradient-to-r from-[#35D07F] to-[#FCFF52] rounded-full blur-md opacity-30" />
+                          </>
+                        )}
+                        
+                        <div className={`relative px-6 py-3 rounded-full font-semibold text-sm transition-all duration-300 flex items-center gap-2 ${
+                          isMeActive 
+                            ? 'text-black' 
+                            : 'text-gray-400 hover:text-white'
+                        }`}>
+                          <span className="relative z-10">Me</span>
+                          <svg className={`w-4 h-4 transition-transform duration-300 ${meDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                          
+                          {/* Hover effect */}
+                          {!isMeActive && (
+                            <>
+                              <div className="absolute inset-0 bg-gradient-to-r from-[#35D07F]/15 to-[#FCFF52]/15 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300" />
+                              <div className="absolute inset-0 border border-[#35D07F]/0 group-hover:border-[#35D07F]/30 rounded-full transition-all duration-300" />
+                            </>
+                          )}
+                        </div>
+                      </button>
+                      
+                      {/* Dropdown Menu */}
+                      {meDropdownOpen && (
+                        <div className="absolute top-full right-0 mt-2 w-48 bg-[#0B1020]/95 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden shadow-xl z-50">
+                          {meLinks.map((link) => (
+                            <Link
+                              key={link.href}
+                              href={link.href}
+                              onClick={() => setMeDropdownOpen(false)}
+                              className={`flex items-center gap-3 px-4 py-3 hover:bg-white/10 transition-all duration-200 ${
+                                pathname === link.href ? 'bg-white/5 text-[#35D07F]' : 'text-gray-300'
+                              }`}
+                            >
+                              <span className="text-lg">{link.icon}</span>
+                              <span className="font-medium">{link.label}</span>
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </nav>
 
                   {/* Right side with epic styling */}
@@ -158,7 +218,7 @@ export default function RootLayout({
                       className="lg:hidden relative group"
                       aria-label="Toggle menu"
                     >
-                      <div className="absolute -inset-2 bg-gradient-to-r from-[#35D07F] to-[#FCFF52] rounded-2xl blur-md opacity-20 group-hover:opacity-40 transition-all duration-300" />
+                      <div className="absolute -inset-1.5 bg-gradient-to-r from-[#35D07F] to-[#FCFF52] rounded-2xl blur-sm opacity-15 group-hover:opacity-25 transition-all duration-300" />
                       <div className="relative p-3 rounded-2xl bg-gradient-to-br from-[#35D07F] to-[#FCFF52] hover:scale-105 transition-transform duration-200">
                         <div className="w-6 h-6 flex flex-col items-center justify-center gap-1.5">
                           <span 
