@@ -1,7 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { useAccount, usePublicClient } from "wagmi";
-import { ethers } from "ethers";
 import BadgeView from "@/components/BadgeView";
 import { CONTRACT_ADDRESSES, BADGE_ABI } from "@/lib/contracts";
 
@@ -33,38 +32,36 @@ export default function BadgesPage() {
 
     setLoading(true);
     try {
-      // Create an ethers provider from wagmi's publicClient
-      const provider = new ethers.providers.JsonRpcProvider(
-        publicClient.transport.url || "https://alfajores-forno.celo-testnet.org"
-      );
-
-      // Ethers contract (read-only using provider)
-      const contract = new ethers.Contract(
-        CONTRACT_ADDRESSES.badge,
-        BADGE_ABI,
-        provider
-      );
-
-      // balanceOf returns BigNumber
-      const balanceBN: ethers.BigNumber = await contract.balanceOf(address);
-      const badgeCount = balanceBN.toNumber();
+      // Use viem's publicClient to read contract
+      const badgeCount = await publicClient.readContract({
+        address: CONTRACT_ADDRESSES.badge as `0x${string}`,
+        abi: BADGE_ABI,
+        functionName: 'balanceOf',
+        args: [address],
+      });
 
       // total tokens
-      let totalTokens = 0;
+      let totalTokens = 0n;
       try {
-        const totalBN: ethers.BigNumber = await contract.tokenCount();
-        totalTokens = totalBN.toNumber();
+        totalTokens = await publicClient.readContract({
+          address: CONTRACT_ADDRESSES.badge as `0x${string}`,
+          abi: BADGE_ABI,
+          functionName: 'tokenCount',
+        }) as bigint;
       } catch (err) {
         // If contract doesn't expose tokenCount, try totalSupply
         try {
-          const altTotal: ethers.BigNumber = await contract.totalSupply();
-          totalTokens = altTotal.toNumber();
+          totalTokens = await publicClient.readContract({
+            address: CONTRACT_ADDRESSES.badge as `0x${string}`,
+            abi: BADGE_ABI,
+            functionName: 'totalSupply',
+          }) as bigint;
         } catch (err2) {
-          totalTokens = 0;
+          totalTokens = 0n;
         }
       }
 
-      if (badgeCount === 0 || totalTokens === 0) {
+      if (badgeCount === 0n || totalTokens === 0n) {
         setBadges([]);
         setLoading(false);
         return;
@@ -73,24 +70,38 @@ export default function BadgesPage() {
       const userBadges: Badge[] = [];
 
       // scan tokens - for production, use subgraph/indexer
-      for (let i = 1; i <= totalTokens; i++) {
+      for (let i = 1; i <= Number(totalTokens); i++) {
         try {
-          const owner: string = await contract.ownerOf(i);
-          if (owner && owner.toLowerCase() === address.toLowerCase()) {
-            const campaignIdBN: ethers.BigNumber = await contract.campaignIds(i);
-            const badgeTypeBN: ethers.BigNumber = await contract.badgeTypes(i);
+          const owner = await publicClient.readContract({
+            address: CONTRACT_ADDRESSES.badge as `0x${string}`,
+            abi: BADGE_ABI,
+            functionName: 'ownerOf',
+            args: [BigInt(i)],
+          }) as string;
 
-            const campaignId = campaignIdBN.toNumber();
-            const badgeType = badgeTypeBN.toNumber();
+          if (owner && owner.toLowerCase() === address.toLowerCase()) {
+            const campaignId = await publicClient.readContract({
+              address: CONTRACT_ADDRESSES.badge as `0x${string}`,
+              abi: BADGE_ABI,
+              functionName: 'campaignIds',
+              args: [BigInt(i)],
+            }) as bigint;
+
+            const badgeType = await publicClient.readContract({
+              address: CONTRACT_ADDRESSES.badge as `0x${string}`,
+              abi: BADGE_ABI,
+              functionName: 'badgeTypes',
+              args: [BigInt(i)],
+            }) as bigint;
 
             userBadges.push({
               tokenId: i,
-              campaignId,
-              badgeType,
-              label: badgeType === 0 ? "Kindness Hero" : "Escrow Champion",
+              campaignId: Number(campaignId),
+              badgeType: Number(badgeType),
+              label: Number(badgeType) === 0 ? "Kindness Hero" : "Escrow Champion",
             });
 
-            if (userBadges.length >= badgeCount) break;
+            if (userBadges.length >= Number(badgeCount)) break;
           }
         } catch (err) {
           continue;
@@ -99,7 +110,6 @@ export default function BadgesPage() {
 
       setBadges(userBadges);
     } catch (err) {
-      console.error("Failed to load badges:", err);
       setBadges([]);
     } finally {
       setLoading(false);
