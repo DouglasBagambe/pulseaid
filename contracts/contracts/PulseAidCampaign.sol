@@ -17,6 +17,7 @@ contract PulseAidCampaign is Ownable, ReentrancyGuard {
         uint256 deadline; // Unix timestamp
         Mode mode;
         bool active;
+        bool approved; // ✅ NEW: Track if admin approved this campaign
     }
     
     mapping(uint256 => Campaign) public campaigns;
@@ -26,6 +27,7 @@ contract PulseAidCampaign is Ownable, ReentrancyGuard {
     PulseAidEscrowHelper public escrowHelper;
     
     event CampaignCreated(uint256 indexed id, address beneficiary, uint256 goal, Mode mode);
+    event CampaignApproved(uint256 indexed id); // ✅ NEW EVENT
     event Donated(uint256 indexed id, address donor, uint256 amount);
     event FundsReleased(uint256 indexed id, uint256 amount);
     event Refunded(uint256 indexed id, address donor, uint256 amount);
@@ -52,14 +54,29 @@ contract PulseAidCampaign is Ownable, ReentrancyGuard {
             raised: 0,
             deadline: deadline,
             mode: mode,
-            active: true
+            active: false,  // ✅ Starts inactive until approved
+            approved: false // ✅ Starts unapproved
         });
         emit CampaignCreated(campaignCount, msg.sender, goal, mode);
+    }
+    
+    // ✅ NEW: Separate function to approve campaigns for donations
+    function approveCampaign(uint256 id) external onlyOwner {
+        Campaign storage camp = campaigns[id];
+        require(!camp.approved, "Already approved");
+        require(block.timestamp < camp.deadline, "Campaign expired");
+        
+        camp.approved = true;
+        camp.active = true; // ✅ Now ready to accept donations
+        
+        emit CampaignApproved(id);
     }
     
     function donate(uint256 id) external payable nonReentrant {
         Campaign storage camp = campaigns[id];
         require(camp.active, "Campaign inactive");
+        require(camp.approved, "Campaign not approved yet"); // ✅ Must be approved
+        require(block.timestamp < camp.deadline, "Campaign expired");
         require(msg.value > 0, "Donation must be > 0");
         
         camp.raised += msg.value;
@@ -73,11 +90,14 @@ contract PulseAidCampaign is Ownable, ReentrancyGuard {
         emit ProofSubmitted(id, proofCid);
     }
     
-    function approveCampaign(uint256 id) external onlyOwner {
+    // ✅ RENAMED: This finalizes campaigns after deadline
+    function finalizeCampaign(uint256 id) external onlyOwner {
         Campaign storage camp = campaigns[id];
+        require(camp.approved, "Campaign not approved");
         require(camp.active, "Campaign inactive");
+        require(block.timestamp >= camp.deadline, "Campaign not ended yet");
         
-        if (camp.mode == Mode.ESCROW && block.timestamp > camp.deadline && camp.raised < camp.goal) {
+        if (camp.mode == Mode.ESCROW && camp.raised < camp.goal) {
             _triggerRefunds(id);
         } else {
             _releaseFunds(id);

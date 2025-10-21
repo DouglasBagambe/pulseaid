@@ -127,6 +127,21 @@ app.post("/api/campaigns", upload.single("proof"), async (req, res) => {
       });
     }
 
+    // Validate deadline is in the future
+    const currentTime = Math.floor(Date.now() / 1000);
+    if (parseInt(deadline) <= currentTime) {
+      return res.status(400).json({
+        error: "Deadline must be in the future",
+      });
+    }
+
+    // Validate beneficiary address
+    if (!/^0x[a-fA-F0-9]{40}$/.test(beneficiary)) {
+      return res.status(400).json({
+        error: "Invalid beneficiary address format",
+      });
+    }
+
     let ipfsCID = null;
     let proofUrl = null;
 
@@ -137,46 +152,68 @@ app.post("/api/campaigns", upload.single("proof"), async (req, res) => {
         proofUrl = `https://ipfs.io/ipfs/${ipfsCID}`;
       } catch (ipfsError) {
         console.error("IPFS upload failed:", ipfsError);
+        // Continue without IPFS if it fails
       }
     }
 
-    // Create campaign on blockchain
-    const chainCampaignId = await createCampaign(
-      ipfsCID || "",
-      goal,
-      mode,
-      deadline
-    );
+    // ✅ Create campaign on blockchain FIRST - this will throw if it fails
+    let chainCampaignId;
+    try {
+      chainCampaignId = await createCampaign(
+        ipfsCID || "",
+        goal,
+        mode,
+        deadline
+      );
+      console.log(`[Backend] Blockchain campaign created with ID: ${chainCampaignId}`);
+    } catch (blockchainError) {
+      console.error("[Backend] Blockchain campaign creation failed:", blockchainError.message);
+      return res.status(500).json({
+        error: "Failed to create campaign on blockchain",
+        details: blockchainError.message,
+        hint: "Please ensure your .env file has CELO_SEPOLIA_RPC and DEPLOYER_PRIVATE_KEY configured correctly",
+      });
+    }
 
-    // Use beneficiary from request or a default value
-    const beneficiaryAddress =
-      beneficiary || "0x0000000000000000000000000000000000000000";
-
-    // Save to MongoDB
+    // ✅ Only save to MongoDB if blockchain creation succeeded
     const newCampaign = new Campaign({
       chainCampaignId,
       ipfsCID: ipfsCID || "",
-      status: "pending",
+      status: "pending", // Admin must approve before it becomes "active"
       title,
       description,
       goal: parseFloat(goal),
       raised: 0,
       mode: parseInt(mode),
       deadline: parseInt(deadline),
-      beneficiary: beneficiaryAddress,
+      beneficiary,
       proofUrl,
       proofs: ipfsCID ? [ipfsCID] : [],
     });
 
     const savedCampaign = await newCampaign.save();
+    console.log(`[Backend] Campaign saved to database:`, savedCampaign._id);
 
     res.json({
       success: true,
       campaign: savedCampaign,
+      message: "Campaign created successfully and awaiting admin approval",
     });
   } catch (err) {
     console.error("Campaign creation error:", err);
-    res.status(500).json({ error: err.message });
+    
+    // Provide helpful error messages
+    if (err.message.includes("Blockchain not configured")) {
+      return res.status(503).json({
+        error: "Service temporarily unavailable",
+        details: "Blockchain integration is not configured. Please contact support.",
+      });
+    }
+    
+    res.status(500).json({ 
+      error: "Failed to create campaign",
+      details: err.message 
+    });
   }
 });
 
@@ -184,7 +221,7 @@ app.post("/api/campaigns", upload.single("proof"), async (req, res) => {
 app.post("/api/campaigns/:id/approve", async (req, res) => {
   try {
     const { id } = req.params;
-    console.log("Approve request for ID:", id);
+    console.log("[Backend] Approve request for campaign ID:", id);
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({
@@ -203,43 +240,61 @@ app.post("/api/campaigns/:id/approve", async (req, res) => {
       return res.status(404).json({ error: "Campaign not found" });
     }
 
-    console.log("Campaign found:", campaign);
+    console.log("[Backend] Campaign found:", {
+      _id: campaign._id,
+      chainCampaignId: campaign.chainCampaignId,
+      status: campaign.status,
+      title: campaign.title
+    });
 
-    // Check if campaign is already approved
+    // Check if campaign is already approved/active
     if (campaign.status === "active") {
       return res.status(400).json({
-        error: "Campaign is already approved",
+        error: "Campaign is already approved and active",
       });
     }
 
-    // Try to approve on blockchain, but don't fail if blockchain is not configured
-    try {
-      // Check if this campaign actually exists on the blockchain
-      // If chainCampaignId is a mock ID (high number), we need to find the real campaign
-      if (campaign.chainCampaignId > 1000) {
-        console.warn("Campaign has mock ID, skipping blockchain approval");
-        console.log(
-          "Note: This campaign was created before blockchain integration was working properly"
-        );
-      } else {
-        await approveCampaign(campaign.chainCampaignId);
-        console.log("Blockchain approval successful");
-      }
-    } catch (blockchainError) {
-      console.warn(
-        "Blockchain approval failed, continuing with database update:",
-        blockchainError.message
-      );
-      // Continue with database update even if blockchain fails
+    // ✅ CRITICAL: Don't approve mock campaigns
+    if (campaign.chainCampaignId > 1000) {
+      return res.status(400).json({
+        error: "Cannot approve this campaign - it was created before blockchain integration was properly configured",
+        hint: "Please create a new campaign to test the system",
+      });
     }
 
+    // ✅ CRITICAL: Approve on blockchain FIRST, fail if it doesn't work
+    try {
+      console.log(`[Backend] Calling blockchain approveCampaign for chain ID: ${campaign.chainCampaignId}`);
+      await approveCampaign(campaign.chainCampaignId);
+      console.log("[Backend] Blockchain approval successful!");
+    } catch (blockchainError) {
+      console.error("[Backend] Blockchain approval FAILED:", blockchainError.message);
+      
+      // ❌ DON'T update database if blockchain fails
+      return res.status(500).json({
+        error: "Failed to approve campaign on blockchain",
+        details: blockchainError.message,
+        hint: "Check that CELO_SEPOLIA_RPC and DEPLOYER_PRIVATE_KEY are set correctly in .env",
+      });
+    }
+
+    // ✅ Only update database if blockchain approval succeeded
     campaign.status = "active";
     await campaign.save();
-    console.log("Campaign approved:", campaign);
-    res.json({ success: true, campaign });
+    
+    console.log("[Backend] Campaign approved and marked as active:", campaign._id);
+    
+    res.json({ 
+      success: true, 
+      campaign,
+      message: "Campaign approved successfully on blockchain and database"
+    });
   } catch (err) {
-    console.error("Approve endpoint error:", err.message);
-    res.status(500).json({ error: err.message });
+    console.error("[Backend] Approve endpoint error:", err);
+    res.status(500).json({ 
+      error: "Failed to approve campaign",
+      details: err.message 
+    });
   }
 });
 
