@@ -45,8 +45,8 @@ export default function RootLayout({
   ];
 
   const meLinks = [
-    { href: "/my-campaigns", label: "My Campaigns", icon: "📊" },
-    { href: "/badges", label: "My Badges", icon: "🏆" },
+    { href: "/my-campaigns", label: "My Campaigns" },
+    { href: "/badges", label: "My Badges" },
   ];
 
   const isActive = (href: string) => pathname === href;
@@ -63,17 +63,12 @@ export default function RootLayout({
 
             {/* EPIC Header */}
             <header 
-              className={`fixed top-0 w-full z-50 transition-all duration-700 ${
+              className={`fixed top-0 w-full z-50 transition-all duration-300 ${
                 scrolled 
-                  ? 'bg-[#0B1020]/60 backdrop-blur-2xl shadow-2xl shadow-[#35D07F]/5' 
+                  ? 'bg-[#0B1020]/80 backdrop-blur-xl border-b border-white/5' 
                   : 'bg-transparent'
               }`}
             >
-              {/* Multi-layer gradient border */}
-              <div className="absolute inset-x-0 bottom-0 h-[1px]">
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#35D07F] to-transparent opacity-50" />
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#FCFF52] to-transparent opacity-30 blur-sm" />
-              </div>
               
               <div className="container mx-auto px-4 lg:px-8">
                 <div className="flex items-center justify-between h-24">
@@ -83,18 +78,13 @@ export default function RootLayout({
                     className="flex items-center gap-4 group relative z-10"
                   >
                     <div className="relative">
-                      {/* Glow layer - subtle */}
-                      <div className="absolute -inset-3 bg-gradient-to-r from-[#35D07F] via-[#FCFF52] to-[#35D07F] rounded-full opacity-10 group-hover:opacity-15 blur-lg transition-all duration-500" />
-                      
-                      {/* Logo container with glassmorphism */}
-                      <div className="relative w-16 h-16 rounded-2xl bg-gradient-to-br from-[#35D07F] via-[#FCFF52] to-[#35D07F] p-[2px] transform group-hover:scale-105 transition-all duration-300">
-                        <div className="w-full h-full bg-[#0B1020]/95 backdrop-blur-xl rounded-2xl flex items-center justify-center relative overflow-hidden">
-                          {/* Animated shine effect */}
-                          <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                      {/* Logo container - clean */}
+                      <div className="relative w-14 h-14 rounded-xl bg-gradient-to-br from-[#35D07F] to-[#2AB56F] p-[1px] transform group-hover:scale-105 transition-all duration-200">
+                        <div className="w-full h-full bg-[#0B1020] rounded-xl flex items-center justify-center">
                           <img 
                             src="/logo.svg" 
                             alt="PulseAid" 
-                            className="w-9 h-9 object-contain relative z-10 drop-shadow-lg"
+                            className="w-8 h-8 object-contain"
                           />
                         </div>
                       </div>
@@ -102,15 +92,12 @@ export default function RootLayout({
                     
                     {/* Brand text */}
                     <div className="hidden sm:block">
-                      <h1 className="text-2xl font-black bg-gradient-to-r from-white via-[#35D07F] to-[#FCFF52] bg-clip-text text-transparent transition-all duration-300">
+                      <h1 className="text-xl font-bold text-white">
                         PulseAid
                       </h1>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <div className="w-2 h-2 rounded-full bg-[#35D07F]" />
-                        <p className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.2em]">
-                          Celo Powered
-                        </p>
-                      </div>
+                      <p className="text-xs text-gray-400">
+                        Celo Powered
+                      </p>
                     </div>
                   </Link>
 
@@ -124,12 +111,9 @@ export default function RootLayout({
                           href={link.href}
                           className="relative group"
                         >
-                          {/* Active indicator background - toned down */}
+                          {/* Active indicator */}
                           {active && (
-                            <>
-                              <div className="absolute inset-0 bg-gradient-to-r from-[#35D07F] to-[#FCFF52] rounded-full" />
-                              <div className="absolute -inset-0.5 bg-gradient-to-r from-[#35D07F] to-[#FCFF52] rounded-full blur-md opacity-30" />
-                            </>
+                            <div className="absolute inset-0 bg-gradient-to-r from-[#35D07F] to-[#2AB56F] rounded-full" />
                           )}
                           
                           <div className={`relative px-6 py-3 rounded-full font-semibold text-sm transition-all duration-300 ${
@@ -139,12 +123,9 @@ export default function RootLayout({
                           }`}>
                             <span className="relative z-10">{link.label}</span>
                             
-                            {/* Hover effect for non-active items */}
+                            {/* Hover effect */}
                             {!active && (
-                              <>
-                                <div className="absolute inset-0 bg-gradient-to-r from-[#35D07F]/15 to-[#FCFF52]/15 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300" />
-                                <div className="absolute inset-0 border border-[#35D07F]/0 group-hover:border-[#35D07F]/30 rounded-full transition-all duration-300" />
-                              </>
+                              <div className="absolute inset-0 bg-white/5 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200" />
                             )}
                           </div>
                         </Link>
@@ -157,12 +138,9 @@ export default function RootLayout({
                         onClick={() => setMeDropdownOpen(!meDropdownOpen)}
                         className="relative group"
                       >
-                        {/* Active indicator if on Me pages */}
+                        {/* Active indicator */}
                         {isMeActive && (
-                          <>
-                            <div className="absolute inset-0 bg-gradient-to-r from-[#35D07F] to-[#FCFF52] rounded-full" />
-                            <div className="absolute -inset-0.5 bg-gradient-to-r from-[#35D07F] to-[#FCFF52] rounded-full blur-md opacity-30" />
-                          </>
+                          <div className="absolute inset-0 bg-gradient-to-r from-[#35D07F] to-[#2AB56F] rounded-full" />
                         )}
                         
                         <div className={`relative px-6 py-3 rounded-full font-semibold text-sm transition-all duration-300 flex items-center gap-2 ${
@@ -177,10 +155,7 @@ export default function RootLayout({
                           
                           {/* Hover effect */}
                           {!isMeActive && (
-                            <>
-                              <div className="absolute inset-0 bg-gradient-to-r from-[#35D07F]/15 to-[#FCFF52]/15 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300" />
-                              <div className="absolute inset-0 border border-[#35D07F]/0 group-hover:border-[#35D07F]/30 rounded-full transition-all duration-300" />
-                            </>
+                            <div className="absolute inset-0 bg-white/5 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200" />
                           )}
                         </div>
                       </button>
@@ -193,11 +168,10 @@ export default function RootLayout({
                               key={link.href}
                               href={link.href}
                               onClick={() => setMeDropdownOpen(false)}
-                              className={`flex items-center gap-3 px-4 py-3 hover:bg-white/10 transition-all duration-200 ${
+                              className={`block px-4 py-3 hover:bg-white/10 transition-all duration-200 ${
                                 pathname === link.href ? 'bg-white/5 text-[#35D07F]' : 'text-gray-300'
                               }`}
                             >
-                              <span className="text-lg">{link.icon}</span>
                               <span className="font-medium">{link.label}</span>
                             </Link>
                           ))}
@@ -218,7 +192,6 @@ export default function RootLayout({
                       className="lg:hidden relative group"
                       aria-label="Toggle menu"
                     >
-                      <div className="absolute -inset-1.5 bg-gradient-to-r from-[#35D07F] to-[#FCFF52] rounded-2xl blur-sm opacity-15 group-hover:opacity-25 transition-all duration-300" />
                       <div className="relative p-3 rounded-2xl bg-gradient-to-br from-[#35D07F] to-[#FCFF52] hover:scale-105 transition-transform duration-200">
                         <div className="w-6 h-6 flex flex-col items-center justify-center gap-1.5">
                           <span 
@@ -323,61 +296,41 @@ export default function RootLayout({
             {/* Main Content */}
             <main className="flex-1 relative z-10 pt-24">{children}</main>
 
-            {/* EPIC Footer */}
-            <footer className="relative mt-32 z-10">
-              {/* Top border */}
-              <div className="absolute inset-x-0 top-0 h-[2px]">
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#35D07F] to-transparent opacity-50" />
-              </div>
-
-              <div className="bg-gradient-to-b from-transparent via-[#0B1020]/50 to-[#0B1020] backdrop-blur-xl">
+            {/* Footer */}
+            <footer className="relative mt-32 z-10 border-t border-white/5">
+              <div className="bg-[#0B1020]">
                 <div className="container mx-auto px-4 lg:px-8 py-20">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
                     {/* MEGA Brand Column */}
                     <div className="lg:col-span-2">
-                      <Link href="/" className="flex items-center gap-4 mb-8 group w-fit">
-                        <div className="relative">
-                          <div className="absolute -inset-3 bg-gradient-to-r from-[#35D07F] to-[#FCFF52] rounded-full opacity-50 blur-2xl group-hover:opacity-75 transition-opacity duration-500" />
-                          <div className="relative w-14 h-14 rounded-2xl bg-gradient-to-br from-[#35D07F] to-[#FCFF52] p-[3px]">
-                            <div className="w-full h-full bg-[#0B1020] rounded-2xl flex items-center justify-center">
-                              <img 
-                                src="/logo.svg" 
-                                alt="PulseAid" 
-                                className="w-8 h-8 object-contain"
-                              />
-                            </div>
+                      <Link href="/" className="flex items-center gap-3 mb-6 group w-fit">
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#35D07F] to-[#2AB56F] p-[1px]">
+                          <div className="w-full h-full bg-[#0B1020] rounded-xl flex items-center justify-center">
+                            <img 
+                              src="/logo.svg" 
+                              alt="PulseAid" 
+                              className="w-7 h-7 object-contain"
+                            />
                           </div>
                         </div>
-                        <h3 className="text-3xl font-black bg-gradient-to-r from-white via-[#35D07F] to-[#FCFF52] bg-clip-text text-transparent">
+                        <h3 className="text-2xl font-bold text-white">
                           PulseAid
                         </h3>
                       </Link>
-                      <p className="text-base text-gray-400 leading-relaxed max-w-md mb-8">
-                        Revolutionizing humanitarian aid through blockchain technology. 
-                        <span className="text-[#35D07F] font-semibold"> Transparent</span>, 
-                        <span className="text-[#FCFF52] font-semibold"> instant</span>, and 
-                        <span className="text-white font-semibold"> impactful</span>.
+                      <p className="text-sm text-gray-400 leading-relaxed max-w-md mb-6">
+                        Humanitarian aid powered by blockchain technology.
                       </p>
-                      <div className="flex flex-wrap gap-3">
-                        <div className="group relative">
-                          <div className="absolute -inset-1 bg-gradient-to-r from-[#35D07F] to-[#FCFF52] rounded-xl opacity-50 group-hover:opacity-75 blur transition-all duration-300" />
-                          <div className="relative flex items-center gap-3 px-5 py-3 bg-[#0B1020] rounded-xl border border-[#35D07F]/30">
-                            <div className="relative">
-                              <div className="w-2 h-2 rounded-full bg-[#35D07F] animate-ping absolute" />
-                              <div className="w-2 h-2 rounded-full bg-[#35D07F]" />
-                            </div>
-                            <span className="text-sm font-bold text-gray-300">
-                              EthNile 2025
-                            </span>
-                          </div>
-                        </div>
+                      <div className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-lg border border-white/10 w-fit">
+                        <div className="w-2 h-2 rounded-full bg-[#35D07F]" />
+                        <span className="text-xs text-gray-400">
+                          EthNile 2025
+                        </span>
                       </div>
                     </div>
 
                     {/* Navigation */}
                     <div>
-                      <h4 className="text-sm font-black text-white mb-8 uppercase tracking-[0.2em] flex items-center gap-2">
-                        <div className="w-8 h-[2px] bg-gradient-to-r from-[#35D07F] to-transparent" />
+                      <h4 className="text-sm font-bold text-white mb-4">
                         Navigation
                       </h4>
                       <div className="space-y-4">

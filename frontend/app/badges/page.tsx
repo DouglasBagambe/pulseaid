@@ -123,8 +123,7 @@ export default function BadgesPage() {
           {/* Header Section */}
           <div className="mb-12">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#35D07F]/10 border border-[#35D07F]/20 mb-4">
-              <span className="text-2xl">🏆</span>
-              <span className="text-sm font-medium text-[#35D07F]">Achievement System</span>
+              <span className="text-sm font-medium text-[#35D07F]">Badges</span>
             </div>
             <h1 className="text-4xl md:text-5xl font-bold mb-3 bg-gradient-to-r from-[#FCFF52] to-[#35D07F] bg-clip-text text-transparent">
               My Badges
@@ -153,22 +152,21 @@ export default function BadgesPage() {
             <div className="flex flex-col items-center justify-center py-20">
               <div className="relative">
                 <div className="w-20 h-20 border-4 border-[#35D07F]/20 border-t-[#35D07F] rounded-full animate-spin" />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-2xl">🎖️</span>
-                </div>
               </div>
-              <p className="text-gray-400 mt-6">Loading your badges...</p>
+              <p className="text-gray-400 mt-6">Loading badges...</p>
             </div>
           ) : badges.length === 0 ? (
             <div className="relative group">
               <div className="absolute inset-0 bg-gradient-to-r from-[#35D07F]/20 to-[#FCFF52]/20 rounded-3xl blur-xl" />
               <div className="relative bg-white/5 backdrop-blur-md rounded-3xl p-12 border border-white/10 text-center">
                 <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#35D07F]/20 to-[#FCFF52]/20 flex items-center justify-center mx-auto mb-6">
-                  <span className="text-4xl">🎖️</span>
+                  <svg className="w-10 h-10 text-[#35D07F]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                  </svg>
                 </div>
                 <h3 className="text-2xl font-semibold mb-3 text-white">No Badges Yet</h3>
                 <p className="text-gray-400 mb-8 max-w-md mx-auto">
-                  Start your journey by donating to campaigns and earn your first badge NFT!
+                  Donate to campaigns to earn your first badge NFT.
                 </p>
                 <a
                   href="/campaigns"
@@ -191,10 +189,14 @@ export default function BadgesPage() {
                       </div>
                       <p className="text-gray-400 text-lg">Total Badges Earned</p>
                       <p className="text-sm text-gray-500 mt-1">
-                        You&apos;re making a real difference! 🌟
+                        Keep up the great work
                       </p>
                     </div>
-                    <div className="text-6xl md:text-7xl">🏆</div>
+                    <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-[#35D07F]/20 to-[#FCFF52]/20 flex items-center justify-center">
+                      <svg className="w-10 h-10 text-[#35D07F]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                      </svg>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -213,20 +215,20 @@ export default function BadgesPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Kindness Hero Badge */}
               <div className="relative group">
-                <div className="absolute inset-0 bg-gradient-to-r from-[#FCFF52]/20 to-transparent rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300" />
+                <div className="absolute inset-0 bg-gradient-to-r from-[#FCFF52]/10 to-transparent rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-300" />
                 <div className="relative bg-white/5 backdrop-blur-md rounded-2xl p-6 border-l-4 border-[#FCFF52] hover:border-[#FCFF52]/50 transition-all duration-300">
                   <div className="flex items-start gap-4">
                     <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#FCFF52] to-[#E5E84A] flex items-center justify-center flex-shrink-0 shadow-lg">
-                      <span className="text-2xl">💛</span>
+                      <span className="text-sm font-bold text-black">K</span>
                     </div>
                     <div className="flex-1">
                       <h4 className="font-semibold text-lg mb-2 text-[#FCFF52]">Kindness Hero</h4>
                       <p className="text-sm text-gray-400 leading-relaxed">
-                        Earned by donating to Pure Kindness campaigns where every contribution counts,
-                        regardless of the goal. Your kindness creates ripples of hope.
+                        Awarded for donating to Kindness Mode campaigns. These badges recognize your direct support
+                        to causes where funds are immediately available to beneficiaries.
                       </p>
                       <div className="mt-3 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FCFF52]/10 border border-[#FCFF52]/20">
-                        <span className="text-xs text-[#FCFF52] font-medium">Pure Kindness Mode</span>
+                        <span className="text-xs text-[#FCFF52] font-medium">Kindness Mode</span>
                       </div>
                     </div>
                   </div>
@@ -235,17 +237,17 @@ export default function BadgesPage() {
 
               {/* Escrow Champion Badge */}
               <div className="relative group">
-                <div className="absolute inset-0 bg-gradient-to-r from-[#35D07F]/20 to-transparent rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300" />
+                <div className="absolute inset-0 bg-gradient-to-r from-[#35D07F]/10 to-transparent rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-300" />
                 <div className="relative bg-white/5 backdrop-blur-md rounded-2xl p-6 border-l-4 border-[#35D07F] hover:border-[#35D07F]/50 transition-all duration-300">
                   <div className="flex items-start gap-4">
                     <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#35D07F] to-[#2AB56F] flex items-center justify-center flex-shrink-0 shadow-lg">
-                      <span className="text-2xl">🛡️</span>
+                      <span className="text-sm font-bold text-black">E</span>
                     </div>
                     <div className="flex-1">
                       <h4 className="font-semibold text-lg mb-2 text-[#35D07F]">Escrow Champion</h4>
                       <p className="text-sm text-gray-400 leading-relaxed">
-                        Earned by helping goal-based campaigns reach their targets. Your support
-                        ensures projects can succeed and funds are used responsibly.
+                        Earned by donating to Escrow Mode campaigns. These badges show your commitment to
+                        milestone-based funding where releases are verified before distribution.
                       </p>
                       <div className="mt-3 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#35D07F]/10 border border-[#35D07F]/20">
                         <span className="text-xs text-[#35D07F] font-medium">Escrow Mode</span>

@@ -1,17 +1,18 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import axios from "axios";
 import { useAccount } from "wagmi";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
+import CampaignCard from "@/components/CampaignCard";
 
 interface Campaign {
   _id: string;
-  chainCampaignId: number;
+  chainCampaignId?: number;
   title: string;
   description?: string;
   goal: number;
   raised?: number;
-  deadline: number;
+  deadline?: number;
   beneficiary: string;
   status: string;
   mode: number;
@@ -19,10 +20,36 @@ interface Campaign {
   createdAt?: string;
 }
 
+const SORT_OPTIONS = [
+  { value: "recent", label: "Most Recent" },
+  { value: "oldest", label: "Oldest First" },
+  { value: "progress", label: "Highest Progress" },
+  { value: "goal", label: "Highest Goal" },
+  { value: "raised", label: "Most Raised" },
+];
+
+const STATUS_FILTERS = [
+  { value: "all", label: "All Status" },
+  { value: "approved", label: "Approved" },
+  { value: "pending", label: "Pending" },
+  { value: "rejected", label: "Rejected" },
+];
+
+const MODE_FILTERS = [
+  { value: "all", label: "All Types" },
+  { value: "0", label: "Kindness" },
+  { value: "1", label: "Escrow" },
+];
+
 export default function MyCampaignsPage() {
   const { address } = useAccount();
+  const router = useRouter();
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [modeFilter, setModeFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("recent");
 
   useEffect(() => {
     if (address) {
@@ -40,14 +67,16 @@ export default function MyCampaignsPage() {
     try {
       const base = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
       const res = await axios.get(`${base}/api/campaigns`);
-      const allCampaigns = res.data?.campaigns || [];
+      const data = res.data;
       
-      // Filter campaigns where beneficiary matches connected wallet
-      const myCampaigns = allCampaigns.filter(
-        (c: Campaign) => c.beneficiary?.toLowerCase() === address.toLowerCase()
-      );
-      
-      setCampaigns(myCampaigns);
+      if (data.success && Array.isArray(data.campaigns)) {
+        const myCampaigns = data.campaigns.filter(
+          (c: Campaign) => c.beneficiary?.toLowerCase() === address.toLowerCase()
+        );
+        setCampaigns(myCampaigns);
+      } else {
+        setCampaigns([]);
+      }
     } catch {
       setCampaigns([]);
     } finally {
@@ -55,13 +84,67 @@ export default function MyCampaignsPage() {
     }
   }
 
-  const formatCELO = (amount: number) => {
-    return (amount / 1e18).toFixed(4);
-  };
+  const filteredAndSorted = useMemo(() => {
+    let result = [...campaigns];
 
-  const getProgress = (raised: number, goal: number) => {
-    return Math.min((raised / goal) * 100, 100);
-  };
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      result = result.filter(
+        (c) =>
+          c.title.toLowerCase().includes(q) ||
+          (c.description || "").toLowerCase().includes(q) ||
+          String(c.chainCampaignId || "").includes(q)
+      );
+    }
+
+    if (statusFilter !== "all") {
+      result = result.filter((c) => c.status === statusFilter);
+    }
+
+    if (modeFilter !== "all") {
+      result = result.filter((c) => c.mode === parseInt(modeFilter));
+    }
+
+    switch (sortBy) {
+      case "recent":
+        result.sort((a, b) => {
+          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return dateB - dateA;
+        });
+        break;
+      case "oldest":
+        result.sort((a, b) => {
+          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return dateA - dateB;
+        });
+        break;
+      case "progress":
+        result.sort((a, b) => {
+          const pctA = ((a.raised || 0) / a.goal) * 100;
+          const pctB = ((b.raised || 0) / b.goal) * 100;
+          return pctB - pctA;
+        });
+        break;
+      case "goal":
+        result.sort((a, b) => b.goal - a.goal);
+        break;
+      case "raised":
+        result.sort((a, b) => (b.raised || 0) - (a.raised || 0));
+        break;
+    }
+
+    return result;
+  }, [campaigns, search, statusFilter, modeFilter, sortBy]);
+
+  function handleCardClick(id: string) {
+    router.push(`/campaign/${id}`);
+  }
+
+  function handleDonate(id: string) {
+    router.push(`/campaign/${id}`);
+  }
 
   return (
     <div className="min-h-screen text-white">
@@ -70,166 +153,156 @@ export default function MyCampaignsPage() {
           {/* Header Section */}
           <div className="mb-12">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#35D07F]/10 border border-[#35D07F]/20 mb-4">
-              <span className="text-2xl">📊</span>
-              <span className="text-sm font-medium text-[#35D07F]">My Dashboard</span>
+              <span className="text-sm font-medium text-[#35D07F]">Dashboard</span>
             </div>
             <h1 className="text-4xl md:text-5xl font-bold mb-3 bg-gradient-to-r from-[#FCFF52] to-[#35D07F] bg-clip-text text-transparent">
               My Campaigns
             </h1>
             <p className="text-gray-400 text-lg">
-              Track and manage all your campaigns in one place
+              View and manage all campaigns you've created
             </p>
           </div>
 
           {!address ? (
-            <div className="relative group">
-              <div className="absolute inset-0 bg-gradient-to-r from-[#35D07F]/20 to-[#FCFF52]/20 rounded-3xl blur-xl" />
-              <div className="relative bg-white/5 backdrop-blur-md rounded-3xl p-12 border border-white/10 text-center">
-                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#35D07F]/20 to-[#FCFF52]/20 flex items-center justify-center mx-auto mb-6">
-                  <svg className="w-10 h-10 text-[#35D07F]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                  </svg>
-                </div>
-                <h3 className="text-2xl font-semibold mb-3 text-white">Connect Your Wallet</h3>
-                <p className="text-gray-400 mb-6 max-w-md mx-auto">
-                  Connect your Celo wallet to view your campaigns
-                </p>
-              </div>
+            <div className="text-center py-20">
+              <p className="text-gray-400">Connect your wallet to view your campaigns</p>
             </div>
           ) : loading ? (
-            <div className="flex flex-col items-center justify-center py-20">
-              <div className="relative">
-                <div className="w-20 h-20 border-4 border-[#35D07F]/20 border-t-[#35D07F] rounded-full animate-spin" />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-2xl">📊</span>
-                </div>
-              </div>
-              <p className="text-gray-400 mt-6">Loading your campaigns...</p>
+            <div className="text-center py-20">
+              <div className="w-20 h-20 border-4 border-[#35D07F]/20 border-t-[#35D07F] rounded-full animate-spin mx-auto" />
+              <p className="text-gray-400 mt-6">Loading...</p>
             </div>
           ) : campaigns.length === 0 ? (
-            <div className="relative group">
-              <div className="absolute inset-0 bg-gradient-to-r from-[#35D07F]/20 to-[#FCFF52]/20 rounded-3xl blur-xl" />
-              <div className="relative bg-white/5 backdrop-blur-md rounded-3xl p-12 border border-white/10 text-center">
-                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#35D07F]/20 to-[#FCFF52]/20 flex items-center justify-center mx-auto mb-6">
-                  <span className="text-4xl">📝</span>
-                </div>
-                <h3 className="text-2xl font-semibold mb-3 text-white">No Campaigns Yet</h3>
-                <p className="text-gray-400 mb-8 max-w-md mx-auto">
-                  You haven&apos;t created any campaigns yet. Start making a difference today!
-                </p>
-                <Link
-                  href="/create"
-                  className="inline-block px-8 py-4 rounded-2xl bg-gradient-to-r from-[#35D07F] to-[#2AB56F] text-black font-semibold hover:shadow-lg hover:shadow-[#35D07F]/30 transition-all duration-300 transform hover:scale-105"
-                >
-                  Create Campaign
-                </Link>
-              </div>
+            <div className="text-center py-20">
+              <p className="text-gray-400 mb-6">No campaigns yet</p>
+              <button
+                onClick={() => router.push("/create")}
+                className="px-8 py-4 rounded-2xl bg-gradient-to-r from-[#35D07F] to-[#2AB56F] text-black font-semibold"
+              >
+                Create Campaign
+              </button>
             </div>
           ) : (
             <>
-              {/* Stats Card */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-                <div className="relative group">
-                  <div className="absolute inset-0 bg-gradient-to-r from-[#35D07F]/20 to-transparent rounded-2xl blur-xl" />
-                  <div className="relative bg-white/5 backdrop-blur-md rounded-2xl p-6 border border-white/10">
-                    <div className="text-4xl font-bold text-[#35D07F] mb-2">{campaigns.length}</div>
-                    <p className="text-gray-400">Total Campaigns</p>
-                  </div>
+              {/* Search and Filters - EXACT COPY from campaigns */}
+              <div className="sticky top-24 z-40 bg-[#0B1020]/80 backdrop-blur-xl border-b border-white/10 -mx-4 px-4 py-4 mb-8">
+                <div className="relative mb-4">
+                  <input
+                    type="text"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Search campaigns by title, description, or ID..."
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl pl-12 pr-4 py-3.5 focus:outline-none focus:border-[#35D07F] focus:bg-white/10 transition-all duration-300 text-white placeholder-gray-500"
+                  />
+                  <svg
+                    className="w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
+                  </svg>
+                  {search && (
+                    <button
+                      onClick={() => setSearch("")}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  )}
                 </div>
-                <div className="relative group">
-                  <div className="absolute inset-0 bg-gradient-to-r from-[#FCFF52]/20 to-transparent rounded-2xl blur-xl" />
-                  <div className="relative bg-white/5 backdrop-blur-md rounded-2xl p-6 border border-white/10">
-                    <div className="text-4xl font-bold text-[#FCFF52] mb-2">
-                      {campaigns.filter(c => c.status === "approved").length}
-                    </div>
-                    <p className="text-gray-400">Active</p>
+
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="flex gap-2 bg-white/5 border border-white/10 rounded-2xl p-1">
+                    {STATUS_FILTERS.map((f) => (
+                      <button
+                        key={f.value}
+                        onClick={() => setStatusFilter(f.value)}
+                        className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 whitespace-nowrap ${
+                          statusFilter === f.value
+                            ? "bg-gradient-to-r from-[#35D07F] to-[#2AB56F] text-black"
+                            : "text-gray-300 hover:text-white hover:bg-white/10"
+                        }`}
+                      >
+                        {f.label}
+                      </button>
+                    ))}
                   </div>
-                </div>
-                <div className="relative group">
-                  <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/20 to-transparent rounded-2xl blur-xl" />
-                  <div className="relative bg-white/5 backdrop-blur-md rounded-2xl p-6 border border-white/10">
-                    <div className="text-4xl font-bold text-yellow-500 mb-2">
-                      {campaigns.filter(c => c.status === "pending").length}
-                    </div>
-                    <p className="text-gray-400">Pending</p>
+
+                  <div className="flex gap-2 bg-white/5 border border-white/10 rounded-2xl p-1">
+                    {MODE_FILTERS.map((f) => (
+                      <button
+                        key={f.value}
+                        onClick={() => setModeFilter(f.value)}
+                        className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 whitespace-nowrap ${
+                          modeFilter === f.value
+                            ? "bg-gradient-to-r from-[#FCFF52] to-[#E5E84A] text-black"
+                            : "text-gray-300 hover:text-white hover:bg-white/10"
+                        }`}
+                      >
+                        {f.label}
+                      </button>
+                    ))}
                   </div>
+
+                  <div className="flex-1" />
+
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="bg-white/5 border border-white/10 rounded-2xl px-4 py-2 text-sm font-semibold text-white focus:outline-none focus:border-[#35D07F] transition-all cursor-pointer"
+                  >
+                    {SORT_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value} className="bg-[#0B1020]">
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
               {/* Campaigns Grid */}
-              <div className="space-y-6">
-                {campaigns.map((campaign) => (
-                  <div key={campaign._id} className="relative group">
-                    <div className="absolute inset-0 bg-gradient-to-r from-[#35D07F]/10 to-[#FCFF52]/10 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-300" />
-                    <div className="relative bg-white/5 backdrop-blur-md rounded-2xl p-6 border border-white/10 hover:border-[#35D07F]/30 transition-all duration-300">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            <h3 className="text-xl font-semibold text-white">{campaign.title}</h3>
-                            <span className={`text-xs px-3 py-1 rounded-full ${
-                              campaign.status === "approved" 
-                                ? "bg-[#35D07F]/20 text-[#35D07F] border border-[#35D07F]/30"
-                                : campaign.status === "pending"
-                                ? "bg-yellow-500/20 text-yellow-500 border border-yellow-500/30"
-                                : "bg-red-500/20 text-red-500 border border-red-500/30"
-                            }`}>
-                              {campaign.status}
-                            </span>
-                            <span className="text-xs px-3 py-1 rounded-full bg-white/10 text-gray-300">
-                              {campaign.mode === 0 ? "💛 Kindness" : "🛡️ Escrow"}
-                            </span>
-                          </div>
-                          {campaign.description && (
-                            <p className="text-gray-400 text-sm mb-4 line-clamp-2">
-                              {campaign.description}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Progress Bar */}
-                      <div className="mb-4">
-                        <div className="flex items-center justify-between text-sm mb-2">
-                          <span className="text-gray-400">Progress</span>
-                          <span className="text-white font-semibold">
-                            {formatCELO(campaign.raised || 0)} / {formatCELO(campaign.goal)} CELO
-                          </span>
-                        </div>
-                        <div className="h-2 bg-white/10 rounded-full overflow-hidden">
-                          <div 
-                            className="h-full bg-gradient-to-r from-[#35D07F] to-[#FCFF52] transition-all duration-500"
-                            style={{ width: `${getProgress(campaign.raised || 0, campaign.goal)}%` }}
-                          />
-                        </div>
-                        <div className="flex items-center justify-between text-xs text-gray-500 mt-1">
-                          <span>{getProgress(campaign.raised || 0, campaign.goal).toFixed(1)}% funded</span>
-                          <span>ID: #{campaign.chainCampaignId || "pending"}</span>
-                        </div>
-                      </div>
-
-                      {/* Actions */}
-                      <div className="flex items-center gap-3">
-                        <Link
-                          href={`/campaign/${campaign.chainCampaignId}`}
-                          className="flex-1 px-4 py-2 rounded-xl bg-gradient-to-r from-[#35D07F] to-[#2AB56F] text-black font-semibold text-center hover:shadow-lg hover:shadow-[#35D07F]/30 transition-all duration-300"
-                        >
-                          View Details
-                        </Link>
-                        {campaign.ipfsCid && (
-                          <a
-                            href={`https://w3s.link/ipfs/${campaign.ipfsCid}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="px-4 py-2 rounded-xl bg-white/10 text-white font-semibold hover:bg-white/20 transition-all duration-300"
-                          >
-                            📄 Proof
-                          </a>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              {filteredAndSorted.length === 0 ? (
+                <div className="text-center py-20">
+                  <h3 className="text-2xl font-semibold mb-3 text-white">No campaigns found</h3>
+                  <p className="text-gray-400 mb-6">Try adjusting your filters or search terms</p>
+                  <button
+                    onClick={() => {
+                      setSearch("");
+                      setStatusFilter("all");
+                      setModeFilter("all");
+                    }}
+                    className="px-6 py-3 rounded-2xl bg-gradient-to-r from-[#35D07F] to-[#2AB56F] text-black font-semibold"
+                  >
+                    Clear Filters
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredAndSorted.map((campaign) => (
+                    <CampaignCard
+                      key={campaign._id}
+                      id={campaign._id}
+                      title={campaign.title}
+                      description={campaign.description}
+                      goal={campaign.goal}
+                      raised={campaign.raised || 0}
+                      deadline={campaign.deadline}
+                      mode={campaign.mode}
+                      status={campaign.status}
+                      onDonate={handleDonate}
+                      onClick={handleCardClick}
+                    />
+                  ))}
+                </div>
+              )}
             </>
           )}
         </div>

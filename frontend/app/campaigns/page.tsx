@@ -28,16 +28,16 @@ const SORT_OPTIONS = [
 ];
 
 const STATUS_FILTERS = [
-  { value: "all", label: "All Status", icon: "🌐" },
-  { value: "active", label: "Active", icon: "✅" },
-  { value: "pending", label: "Pending", icon: "⏳" },
-  { value: "completed", label: "Completed", icon: "🎉" },
+  { value: "all", label: "All Status" },
+  { value: "active", label: "Active" },
+  { value: "pending", label: "Pending" },
+  { value: "completed", label: "Completed" },
 ];
 
 const MODE_FILTERS = [
-  { value: "all", label: "All Types", icon: "🔍" },
-  { value: "0", label: "Kindness", icon: "💛" },
-  { value: "1", label: "Escrow", icon: "🛡️" },
+  { value: "all", label: "All Types" },
+  { value: "0", label: "Kindness" },
+  { value: "1", label: "Escrow" },
 ];
 
 export default function CampaignsPage() {

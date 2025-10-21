@@ -246,8 +246,8 @@ export default function CreatePage() {
                   onChange={(e) => setMode(e.target.value)}
                   required
                 >
-                  <option value="0" className="bg-[#0E1726]">💛 Pure Kindness</option>
-                  <option value="1" className="bg-[#0E1726]">🛡️ Goal-Based (Escrow)</option>
+                  <option value="0" className="bg-[#0E1726]">Pure Kindness</option>
+                  <option value="1" className="bg-[#0E1726]">Goal-Based (Escrow)</option>
                 </select>
                 <svg className="absolute right-5 top-[58%] pointer-events-none text-gray-400" width="12" height="8" viewBox="0 0 12 8" fill="none">
                   <path d="M1 1L6 6L11 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -268,8 +268,8 @@ export default function CreatePage() {
                   <div className="flex-1">
                     <p className="text-sm text-gray-300 leading-relaxed">
                       {mode === "0"
-                        ? "💛 Pure Kindness: All donations go directly to you, even if the goal isn't reached. Perfect for urgent needs."
-                        : "🛡️ Escrow Mode: Funds are held in smart contract. If goal isn't met by deadline, donors get automatic refunds. Builds more trust for large goals."}
+                        ? "Pure Kindness: All donations go directly to you, even if the goal isn't reached. Perfect for urgent needs."
+                        : "Escrow Mode: Funds are held in smart contract. If goal isn't met by deadline, donors get automatic refunds. Builds more trust for large goals."}
                     </p>
                   </div>
                 </div>

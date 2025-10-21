@@ -311,7 +311,7 @@ export default function AdminPage() {
                                 : "bg-[#FCFF52]/10 border border-[#FCFF52]/20 text-[#FCFF52]"
                             }`}
                           >
-                            {isEscrow ? "🛡️ Escrow" : "💛 Kindness"}
+                            {isEscrow ? "Escrow" : "Kindness"}
                           </span>
                           <span
                             className={`px-3 py-1 rounded-full text-xs font-semibold capitalize bg-white/5 border border-white/10 ${
