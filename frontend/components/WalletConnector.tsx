@@ -34,9 +34,9 @@ export default function WalletConnector() {
                   <button
                     onClick={openConnectModal}
                     type="button"
-                    className="px-4 py-2 bg-gradient-to-r from-[#35D07F] to-[#FCFF52] text-black font-semibold rounded-xl hover:from-[#2BB86F] hover:to-[#E6F52E] transition-all duration-300 transform hover:scale-105"
+                    className="px-3 py-2 lg:px-4 lg:py-2 bg-gradient-to-r from-[#35D07F] to-[#FCFF52] text-black text-sm lg:text-base font-semibold rounded-lg lg:rounded-xl hover:from-[#2BB86F] hover:to-[#E6F52E] transition-all duration-300 active:scale-95 whitespace-nowrap"
                   >
-                    Connect Wallet
+                    Connect
                   </button>
                 );
               }
@@ -84,7 +84,7 @@ export default function WalletConnector() {
                 <button
                   onClick={openAccountModal}
                   type="button"
-                  className="px-4 py-2 bg-gradient-to-r from-[#35D07F] to-[#FCFF52] text-black font-semibold rounded-xl hover:from-[#2BB86F] hover:to-[#E6F52E] transition-all duration-300"
+                  className="px-3 py-2 lg:px-4 lg:py-2 bg-gradient-to-r from-[#35D07F] to-[#FCFF52] text-black text-sm lg:text-base font-semibold rounded-lg lg:rounded-xl hover:from-[#2BB86F] hover:to-[#E6F52E] transition-all duration-300 active:scale-95"
                 >
                   {account.displayName}
                 </button>

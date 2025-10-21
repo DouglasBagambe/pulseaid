@@ -8,7 +8,14 @@ import {
   getDefaultWallets,
   connectorsForWallets,
 } from "@rainbow-me/rainbowkit";
-import { injectedWallet } from "@rainbow-me/rainbowkit/wallets";
+import { 
+  injectedWallet,
+  metaMaskWallet,
+  walletConnectWallet,
+  coinbaseWallet,
+  trustWallet,
+  rainbowWallet
+} from "@rainbow-me/rainbowkit/wallets";
 import { configureChains, createConfig, WagmiConfig } from "wagmi";
 import { jsonRpcProvider } from "wagmi/providers/jsonRpc";
 
@@ -77,27 +84,20 @@ const {
 // Configure wallets with proper Celo support
 const wcProjectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID;
 
-let connectors;
-if (wcProjectId) {
-  // Full wallet list (includes WalletConnect-powered options)
-  const conf = getDefaultWallets({
-    appName: "PulseAid",
-    projectId: wcProjectId,
-    chains,
-  });
-  connectors = conf.connectors;
-} else {
-  // Safe fallback: only Injected wallet without WalletConnect features
-  console.warn(
-    "WalletConnect projectId missing: set NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID to enable wallet listings. Falling back to Injected wallet only."
-  );
-  connectors = connectorsForWallets([
-    {
-      groupName: "Recommended",
-      wallets: [injectedWallet({ chains })],
-    },
-  ]);
-}
+// Configure wallets with mobile-first approach
+const connectors = connectorsForWallets([
+  {
+    groupName: "Popular",
+    wallets: [
+      injectedWallet({ chains }),
+      metaMaskWallet({ projectId: wcProjectId || "dummy", chains }),
+      ...(wcProjectId ? [walletConnectWallet({ projectId: wcProjectId, chains })] : []),
+      coinbaseWallet({ appName: "PulseAid", chains }),
+      trustWallet({ projectId: wcProjectId || "dummy", chains }),
+      rainbowWallet({ projectId: wcProjectId || "dummy", chains }),
+    ],
+  },
+]);
 
 const wagmiConfig = createConfig({
   autoConnect: true,
@@ -113,7 +113,13 @@ export default function Web3Provider({
 }) {
   return (
     <WagmiConfig config={wagmiConfig}>
-      <RainbowKitProvider chains={chains}>{children}</RainbowKitProvider>
+      <RainbowKitProvider 
+        chains={chains}
+        modalSize="compact"
+        showRecentTransactions={true}
+      >
+        {children}
+      </RainbowKitProvider>
     </WagmiConfig>
   );
 }
