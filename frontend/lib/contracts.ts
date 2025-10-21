@@ -8,9 +8,12 @@ export const CONTRACT_ADDRESSES = {
   escrow: process.env.NEXT_PUBLIC_ESCROW_ADDRESS,
 };
 
-export const CAMPAIGN_ABI = CampaignArtifact.abi;
-export const BADGE_ABI = BadgeArtifact.abi;
-export const ESCROW_HELPER_ABI = EscrowHelperArtifact.abi;
+// Type assertion to access abi property
+type ContractArtifact = { abi: any };
+
+export const CAMPAIGN_ABI = (CampaignArtifact as ContractArtifact).abi;
+export const BADGE_ABI = (BadgeArtifact as ContractArtifact).abi;
+export const ESCROW_HELPER_ABI = (EscrowHelperArtifact as ContractArtifact).abi;
 
 // Campaign modes
 export enum CampaignMode {
