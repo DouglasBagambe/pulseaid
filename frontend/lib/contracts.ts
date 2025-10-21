@@ -4,9 +4,9 @@ export const CONTRACT_ADDRESSES = {
   escrow: process.env.NEXT_PUBLIC_ESCROW_ADDRESS,
 };
 
-export const CAMPAIGN_ABI = require('../../contracts/artifacts/contracts/PulseAidCampaign.sol/PulseAidCampaign.json').abi;
-export const BADGE_ABI = require('../../contracts/artifacts/contracts/PulseAidBadge.sol/PulseAidBadge.json').abi;
-export const ESCROW_HELPER_ABI = require('../../contracts/artifacts/contracts/PulseAidEscrowHelper.sol/PulseAidEscrowHelper.json').abi;
+export const CAMPAIGN_ABI = require('../contract_abi/PulseAidCampaign.json').abi;
+export const BADGE_ABI = require('../contract_abi/PulseAidBadge.json').abi;
+export const ESCROW_HELPER_ABI = require('../contract_abi/PulseAidEscrowHelper.json').abi;
 
 // Campaign modes
 export enum CampaignMode {

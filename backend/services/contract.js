@@ -2,11 +2,11 @@ const ethers = require("ethers");
 require("dotenv").config();
 
 const CAMPAIGN_ABI =
-  require("../../contracts/artifacts/contracts/PulseAidCampaign.sol/PulseAidCampaign.json").abi;
+  require("../contract_abi/PulseAidCampaign.json").abi;
 const BADGE_ABI =
-  require("../../contracts/artifacts/contracts/PulseAidBadge.sol/PulseAidBadge.json").abi;
+  require("../contract_abi/PulseAidBadge.json").abi;
 const ESCROW_ABI =
-  require("../../contracts/artifacts/contracts/PulseAidEscrowHelper.sol/PulseAidEscrowHelper.json").abi;
+  require("../contract_abi/PulseAidEscrowHelper.json").abi;
 
 if (!process.env.CELO_SEPOLIA_RPC || !process.env.DEPLOYER_PRIVATE_KEY) {
   console.error(
