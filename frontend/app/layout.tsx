@@ -237,45 +237,54 @@ export default function RootLayout({
                             key={link.href}
                             href={link.href}
                             className="block group"
-                            style={{ 
-                              animationDelay: `${index * 75}ms`,
-                              animation: mobileMenuOpen ? 'slideInUp 0.5s ease-out forwards' : 'none',
-                              opacity: 0
-                            }}
                             onClick={() => setMobileMenuOpen(false)}
                           >
-                            <div className={`relative overflow-hidden rounded-2xl transition-all duration-500 ${
+                            <div className={`relative overflow-hidden rounded-xl transition-all ${
                               active 
-                                ? 'bg-gradient-to-r from-[#35D07F] to-[#FCFF52]' 
-                                : 'bg-white/5 hover:bg-white/10'
+                                ? 'bg-gradient-to-r from-[#35D07F] to-[#2AB56F]' 
+                                : 'bg-white/5'
                             }`}>
-                              
-                              <div className={`relative px-6 py-5 flex items-center justify-between ${
-                                active ? 'bg-[#0B1020]/90' : ''
-                              } rounded-2xl m-[2px]`}>
-                                <span className={`text-lg font-bold transition-all duration-300 ${
-                                  active 
-                                    ? 'text-transparent bg-gradient-to-r from-[#35D07F] to-[#FCFF52] bg-clip-text' 
-                                    : 'text-gray-300 group-hover:text-white'
-                                }`}>
-                                  {link.label}
-                                </span>
-                                <div className={`transform transition-all duration-500 ${
-                                  active ? 'rotate-0 scale-110' : 'group-hover:translate-x-2'
-                                }`}>
-                                  {active ? (
-                                    <div className="w-2 h-2 rounded-full bg-gradient-to-r from-[#35D07F] to-[#FCFF52]" />
-                                  ) : (
-                                    <svg className="w-5 h-5 text-gray-500 group-hover:text-[#35D07F]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                    </svg>
-                                  )}
-                                </div>
+                              <div className={`px-4 py-3 flex items-center justify-between ${
+                                active ? 'text-black font-semibold' : 'text-gray-300'
+                              }`}>
+                                <span className="text-base">{link.label}</span>
+                                {active && <div className="w-2 h-2 rounded-full bg-black" />}
                               </div>
                             </div>
                           </a>
                         );
                       })}
+                      
+                      {/* Me Section - Mobile */}
+                      <div className="mt-6 pt-6 border-t border-white/10">
+                        <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-2">
+                          Me
+                        </div>
+                        {meLinks.map((link) => {
+                          const active = isActive(link.href);
+                          return (
+                            <a
+                              key={link.href}
+                              href={link.href}
+                              className="block group mb-2"
+                              onClick={() => setMobileMenuOpen(false)}
+                            >
+                              <div className={`relative overflow-hidden rounded-xl transition-all ${
+                                active 
+                                  ? 'bg-gradient-to-r from-[#35D07F] to-[#2AB56F]' 
+                                  : 'bg-white/5'
+                              }`}>
+                                <div className={`px-4 py-3 flex items-center justify-between ${
+                                  active ? 'text-black font-semibold' : 'text-gray-300'
+                                }`}>
+                                  <span className="text-base">{link.label}</span>
+                                  {active && <div className="w-2 h-2 rounded-full bg-black" />}
+                                </div>
+                              </div>
+                            </a>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
                 </div>

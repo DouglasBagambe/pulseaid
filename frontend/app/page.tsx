@@ -101,13 +101,13 @@ export default function Home() {
             </div>
 
             {/* Main Heading */}
-            <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
               <span className="bg-gradient-to-r from-[#FCFF52] via-[#35D07F] to-[#FCFF52] bg-clip-text text-transparent">
                 Onchain Hope
               </span>
             </h1>
 
-            <p className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed">
+            <p className="text-base sm:text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-8 lg:mb-10 leading-relaxed px-4">
               Transparent crowdfunding for real human crises. Every donation
               tracked on-chain with AI-powered fraud detection.
             </p>
@@ -245,30 +245,29 @@ export default function Home() {
       </section>
 
       {/* Campaigns Section */}
-      <section id="campaigns" className="container mx-auto px-4 py-12">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
-          <h2 className="text-3xl md:text-4xl font-bold text-white">
+      <section id="campaigns" className="container mx-auto px-4 py-8 lg:py-12">
+        <div className="mb-6">
+          <h2 className="text-2xl lg:text-4xl font-bold text-white mb-4">
             Active Campaigns
           </h2>
           
-          {/* Filter Buttons */}
-          <div className="flex flex-wrap gap-2">
+          {/* Filter Buttons - Mobile Scrollable */}
+          <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
             {[
-              { value: "recent", label: "Most Recent", icon: "" },
-              { value: "ending", label: "Ending Soon", icon: "" },
-              { value: "highest", label: "Highest Goal", icon: "" },
-              { value: "popular", label: "Most Funded", icon: "" },
+              { value: "recent", label: "Most Recent" },
+              { value: "ending", label: "Ending Soon" },
+              { value: "highest", label: "Highest Goal" },
+              { value: "popular", label: "Most Funded" },
             ].map((f) => (
               <button
                 key={f.value}
                 onClick={() => setFilter(f.value as FilterType)}
-                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
+                className={`px-3 py-2 lg:px-4 lg:py-2 rounded-lg text-xs lg:text-sm font-semibold whitespace-nowrap transition-all ${
                   filter === f.value
                     ? "bg-gradient-to-r from-[#35D07F] to-[#2AB56F] text-black"
-                    : "bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10 hover:border-[#35D07F]/30"
+                    : "bg-white/5 border border-white/10 text-gray-300"
                 }`}
               >
-                <span className="mr-1">{f.icon}</span>
                 {f.label}
               </button>
             ))}
@@ -312,7 +311,7 @@ export default function Home() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
               {getFilteredCampaigns().map((c) => (
                 <CampaignCard
                   key={c._id}
