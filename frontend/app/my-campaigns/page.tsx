@@ -52,6 +52,7 @@ export default function MyCampaignsPage() {
   const [sortBy, setSortBy] = useState("recent");
 
   useEffect(() => {
+    document.title = "PulseAid | My Campaigns";
     if (address) {
       loadMyCampaigns();
     } else {

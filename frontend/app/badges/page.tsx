@@ -18,6 +18,7 @@ export default function BadgesPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    document.title = "PulseAid | My Badges";
     if (address) {
       loadBadges();
     } else {

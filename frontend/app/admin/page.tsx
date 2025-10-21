@@ -68,8 +68,18 @@ export default function AdminPage() {
   }
 
   useEffect(() => {
+    document.title = "PulseAid | Admin";
     load();
   }, []);
+
+  useEffect(() => {
+    if (address) {
+      load();
+    } else {
+      setCampaigns([]);
+      setLoading(false);
+    }
+  }, [address]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();

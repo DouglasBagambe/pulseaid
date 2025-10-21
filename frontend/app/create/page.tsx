@@ -4,7 +4,11 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useAccount } from "wagmi";
 
-export default function CreatePage() {
+export default function CreateCampaignPage() {
+  useEffect(() => {
+    document.title = "PulseAid | Create Campaign";
+  }, []);
+
   const router = useRouter();
   const { address, isConnected } = useAccount();
   

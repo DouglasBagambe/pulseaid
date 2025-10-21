@@ -51,6 +51,7 @@ export default function CampaignsPage() {
   const router = useRouter();
 
   useEffect(() => {
+    document.title = "PulseAid | Campaigns";
     loadCampaigns();
   }, []);
 
