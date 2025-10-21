@@ -48,7 +48,7 @@ export default function BadgesPage() {
           abi: BADGE_ABI,
           functionName: 'tokenCount',
         }) as bigint;
-      } catch (err) {
+      } catch {
         // If contract doesn't expose tokenCount, try totalSupply
         try {
           totalTokens = await publicClient.readContract({
@@ -56,7 +56,7 @@ export default function BadgesPage() {
             abi: BADGE_ABI,
             functionName: 'totalSupply',
           }) as bigint;
-        } catch (err2) {
+        } catch {
           totalTokens = 0n;
         }
       }
@@ -103,13 +103,13 @@ export default function BadgesPage() {
 
             if (userBadges.length >= Number(badgeCount)) break;
           }
-        } catch (err) {
+        } catch {
           continue;
         }
       }
 
       setBadges(userBadges);
-    } catch (err) {
+    } catch {
       setBadges([]);
     } finally {
       setLoading(false);
@@ -191,7 +191,7 @@ export default function BadgesPage() {
                       </div>
                       <p className="text-gray-400 text-lg">Total Badges Earned</p>
                       <p className="text-sm text-gray-500 mt-1">
-                        You're making a real difference! 🌟
+                        You&apos;re making a real difference! 🌟
                       </p>
                     </div>
                     <div className="text-6xl md:text-7xl">🏆</div>

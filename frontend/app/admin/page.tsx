@@ -2,7 +2,6 @@
 import { useEffect, useMemo, useState } from "react";
 import axios, { AxiosError } from "axios";
 import { useAccount, usePublicClient, useWalletClient } from "wagmi";
-import { parseEther } from "viem";
 
 const CONTRACT_ADDRESS = "0xe753A3b1696622FAEE37f9b9EA5EAC774e196BE0";
 
@@ -62,7 +61,7 @@ export default function AdminPage() {
       const res = await axios.get(`${base}/api/campaigns`);
       const data = res.data?.campaigns || [];
       setCampaigns(Array.isArray(data) ? data : []);
-    } catch (e) {
+    } catch {
     } finally {
       setLoading(false);
     }
@@ -132,13 +131,6 @@ export default function AdminPage() {
           outputs: [{ name: "", type: "address" }],
         },
       ] as const;
-
-      // Check contract owner
-      const contractOwner = await publicClient.readContract({
-        address: CONTRACT_ADDRESS as `0x${string}`,
-        abi: CAMPAIGN_ABI,
-        functionName: "owner",
-      });
 
       // Check current state on blockchain
       const campaignData = await publicClient.readContract({

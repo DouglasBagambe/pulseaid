@@ -17,7 +17,6 @@ export default function CreatePage() {
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
-  const [minDate, setMinDate] = useState("");
   const [mounted, setMounted] = useState(false);
 
   // Handle client-side mounting to avoid hydration issues
@@ -30,7 +29,7 @@ export default function CreatePage() {
       const defaultDateStr = new Date(defaultDeadline * 1000).toISOString().slice(0, 16);
       setDeadline(defaultDateStr);
     }
-  }, []);
+  }, [deadline]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -81,9 +80,8 @@ export default function CreatePage() {
 
       alert(`Campaign created successfully! ID: ${res.data?.campaign?._id}`);
       router.push("/");
-    } catch (err: any) {
-      console.error("Failed to create campaign:", err);
-      const errorMsg = err.response?.data?.error || err.response?.data?.message || err.message;
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : 'Unknown error';
       alert(`Failed to create campaign: ${errorMsg}`);
     } finally {
       setLoading(false);
@@ -292,7 +290,7 @@ export default function CreatePage() {
                 required
               />
               <p className="text-xs text-gray-500 mt-2">
-                We'll notify you when your campaign is approved or if there are any issues
+                We&apos;ll notify you when your campaign is approved or if there are any issues
               </p>
             </div>
 

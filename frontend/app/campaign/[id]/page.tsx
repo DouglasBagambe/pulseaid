@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import axios from "axios";
 import { useAccount, usePublicClient, useWalletClient } from "wagmi";
-import { parseEther, formatEther } from "viem";
+import { parseEther } from "viem";
 
 const CONTRACT_ADDRESS = "0xe753A3b1696622FAEE37f9b9EA5EAC774e196BE0";
 

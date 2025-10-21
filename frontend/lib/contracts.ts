@@ -1,12 +1,16 @@
+import CampaignArtifact from '../contract_abi/PulseAidCampaign.json';
+import BadgeArtifact from '../contract_abi/PulseAidBadge.json';
+import EscrowHelperArtifact from '../contract_abi/PulseAidEscrowHelper.json';
+
 export const CONTRACT_ADDRESSES = {
   campaign: process.env.NEXT_PUBLIC_CAMPAIGN_ADDRESS,
   badge: process.env.NEXT_PUBLIC_BADGE_ADDRESS,
   escrow: process.env.NEXT_PUBLIC_ESCROW_ADDRESS,
 };
 
-export const CAMPAIGN_ABI = require('../contract_abi/PulseAidCampaign.json').abi;
-export const BADGE_ABI = require('../contract_abi/PulseAidBadge.json').abi;
-export const ESCROW_HELPER_ABI = require('../contract_abi/PulseAidEscrowHelper.json').abi;
+export const CAMPAIGN_ABI = CampaignArtifact.abi;
+export const BADGE_ABI = BadgeArtifact.abi;
+export const ESCROW_HELPER_ABI = EscrowHelperArtifact.abi;
 
 // Campaign modes
 export enum CampaignMode {

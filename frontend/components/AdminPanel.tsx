@@ -57,9 +57,9 @@ export default function AdminPanel() {
       console.log(`[AdminPanel] ${action} response:`, res.data);
       alert(`Campaign ${action}d successfully!`);
       await loadCampaigns();
-    } catch (err: any) {
-      console.error(`[AdminPanel] ${action} error:`, err.response?.data || err.message);
-      alert(`Failed to ${action}: ${err.response?.data?.message || err.message}`);
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : 'Unknown error';
+      alert(`Failed to ${action}: ${errorMsg}`);
     } finally {
       setProcessing(null);
     }

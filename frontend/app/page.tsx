@@ -42,7 +42,7 @@ export default function Home() {
       } else {
         setCampaigns([]);
       }
-    } catch (err) {
+    } catch {
       setCampaigns([]);
     } finally {
       setLoading(false);
@@ -51,7 +51,7 @@ export default function Home() {
 
   // Filter and limit campaigns
   const getFilteredCampaigns = () => {
-    let filtered = [...campaigns].filter(c => c.status === "active");
+    const filtered = [...campaigns].filter(c => c.status === "active");
     
     switch (filter) {
       case "recent":

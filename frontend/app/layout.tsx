@@ -1,10 +1,10 @@
 "use client";
 
-import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
+import Link from "next/link";
 
 import Web3Provider from "@/providers/Web3Provider";
 import WalletConnector from "@/components/WalletConnector";
@@ -72,7 +72,7 @@ export default function RootLayout({
               <div className="container mx-auto px-4 lg:px-8">
                 <div className="flex items-center justify-between h-24">
                   {/* MEGA Logo */}
-                  <a 
+                  <Link 
                     href="/" 
                     className="flex items-center gap-4 group relative z-10"
                   >
@@ -106,14 +106,14 @@ export default function RootLayout({
                         </p>
                       </div>
                     </div>
-                  </a>
+                  </Link>
 
                   {/* EPIC Desktop Navigation */}
                   <nav className="hidden lg:flex items-center gap-3 bg-white/5 backdrop-blur-xl rounded-full p-2 border border-white/10">
                     {navLinks.map((link) => {
                       const active = isActive(link.href);
                       return (
-                        <a
+                        <Link
                           key={link.href}
                           href={link.href}
                           className="relative group"
@@ -141,7 +141,7 @@ export default function RootLayout({
                               </>
                             )}
                           </div>
-                        </a>
+                        </Link>
                       );
                     })}
                   </nav>
@@ -275,7 +275,7 @@ export default function RootLayout({
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
                     {/* MEGA Brand Column */}
                     <div className="lg:col-span-2">
-                      <a href="/" className="flex items-center gap-4 mb-8 group w-fit">
+                      <Link href="/" className="flex items-center gap-4 mb-8 group w-fit">
                         <div className="relative">
                           <div className="absolute -inset-3 bg-gradient-to-r from-[#35D07F] to-[#FCFF52] rounded-full opacity-50 blur-2xl group-hover:opacity-75 transition-opacity duration-500" />
                           <div className="relative w-14 h-14 rounded-2xl bg-gradient-to-br from-[#35D07F] to-[#FCFF52] p-[3px]">
@@ -291,7 +291,7 @@ export default function RootLayout({
                         <h3 className="text-3xl font-black bg-gradient-to-r from-white via-[#35D07F] to-[#FCFF52] bg-clip-text text-transparent">
                           PulseAid
                         </h3>
-                      </a>
+                      </Link>
                       <p className="text-base text-gray-400 leading-relaxed max-w-md mb-8">
                         Revolutionizing humanitarian aid through blockchain technology. 
                         <span className="text-[#35D07F] font-semibold"> Transparent</span>, 
