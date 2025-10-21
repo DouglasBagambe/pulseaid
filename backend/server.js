@@ -18,7 +18,19 @@ const Campaign = require("./models/Campaign");
 dotenv.config();
 
 const app = express();
-app.use(cors());
+
+// CORS configuration for production
+app.use(cors({
+  origin: [
+    'http://localhost:3000',
+    'https://pulseaid.netlify.app',
+    'https://pulseaid.onrender.com'
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 app.use(express.json());
 const upload = multer({ dest: "uploads/" });
 
