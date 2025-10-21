@@ -31,21 +31,21 @@ if (process.env.DEPLOYER_PRIVATE_KEY && provider) {
 
 const campaignContract = wallet
   ? new ethers.Contract(
-      "0xB39Aa33939b8c9a50b3331BD0beeAa98D0c0f91D",
+      "0xe753A3b1696622FAEE37f9b9EA5EAC774e196BE0",
       CAMPAIGN_ABI,
       wallet
     )
   : null;
 const badgeContract = wallet
   ? new ethers.Contract(
-      "0x6Ed99b2dA3a3fe972036bAB4fB142002BfD38139",
+      "0xCB7982672fDBA957d91BD9144bEF247e2B6078D8",
       BADGE_ABI,
       wallet
     )
   : null;
 const escrowContract = wallet
   ? new ethers.Contract(
-      "0xBDB61a04DB269052A2F9d32423001d7E13A1bFB5",
+      "0x294DA90f0996f6C9F3d49115303e322144F7397d",
       ESCROW_ABI,
       wallet
     )
@@ -103,64 +103,16 @@ async function createCampaign(ipfsCID, goal, mode, deadline) {
   }
 }
 
+// NOTE: approveCampaign is now handled in the frontend with MetaMask
+// This function is kept for reference but should not be called
+// The backend /api/campaigns/:id/approve endpoint only updates the database
 async function approveCampaign(id) {
-  // ✅ CRITICAL: Don't approve if blockchain isn't configured
-  if (!campaignContract || !wallet) {
-    throw new Error(
-      "Blockchain not configured. Cannot approve campaigns without blockchain access."
-    );
-  }
-
-  try {
-    console.log(`[Contract] Approving campaign ID: ${id}`);
-
-    // Check if campaign exists on blockchain
-    const campaign = await campaignContract.campaigns(id);
-    if (!campaign.active) {
-      throw new Error(`Campaign ${id} is not active on blockchain`);
-    }
-
-    console.log(`[Contract] Calling approveCampaign for ID: ${id}`);
-    const tx = await campaignContract.approveCampaign(id);
-    console.log(`[Contract] Approve tx sent: ${tx.hash}`);
-    
-    const receipt = await tx.wait();
-    console.log(`[Contract] Approve tx confirmed: ${receipt.hash}`);
-
-    // Mint badges for donors
-    if (escrowContract && badgeContract) {
-      console.log(`[Contract] Checking donors for campaign ${id}`);
-      // Note: You'll need to implement a way to get the actual donor list
-      // This is a placeholder - you should get donors from events or escrow contract
-      const donors = []; // TODO: Implement getDonors function
-      
-      for (const donor of donors) {
-        try {
-          const amount = await escrowContract.contributions(id, donor);
-          if (amount > 0) {
-            const badgeType = campaign.mode === 0 ? 0 : 1;
-            console.log(
-              `[Contract] Minting badge for donor ${donor}, type ${badgeType}`
-            );
-            const badgeTx = await badgeContract.mintBadge(donor, id, badgeType);
-            await badgeTx.wait();
-            console.log(`[Contract] Badge minted for ${donor}`);
-          }
-        } catch (badgeErr) {
-          console.error(`[Contract] Failed to mint badge for ${donor}:`, badgeErr.message);
-          // Continue with other donors even if one fails
-        }
-      }
-    }
-
-    console.log(`[Contract] Campaign ${id} approved successfully`);
-  } catch (err) {
-    console.error(
-      `[Contract] Approve campaign error for ID ${id}:`,
-      err.message
-    );
-    throw new Error(`Approve campaign failed: ${err.message}`);
-  }
+  console.warn(
+    `[Contract] approveCampaign called for ID ${id} - this should be handled in frontend with MetaMask`
+  );
+  throw new Error(
+    "Campaign approval should be done through frontend with MetaMask, not backend"
+  );
 }
 
 async function submitProof(id, proofCID) {

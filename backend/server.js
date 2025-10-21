@@ -9,6 +9,10 @@ const {
   submitProof,
 } = require("./services/contract");
 const { uploadToIPFS } = require("./services/ipfs");
+const {
+  sendCampaignApprovalEmail,
+  sendCampaignRejectionEmail,
+} = require("./services/email");
 const Campaign = require("./models/Campaign");
 
 dotenv.config();
@@ -118,12 +122,20 @@ app.get("/api/campaigns/:id", async (req, res) => {
 // Create new campaign
 app.post("/api/campaigns", upload.single("proof"), async (req, res) => {
   try {
-    const { title, description, goal, mode, deadline, beneficiary } = req.body;
+    const { title, description, goal, mode, deadline, beneficiary, creatorEmail } = req.body;
 
     // Validate required fields
-    if (!title || !goal || !deadline || !beneficiary) {
+    if (!title || !goal || !deadline || !beneficiary || !creatorEmail) {
       return res.status(400).json({
-        error: "Missing required fields: title, goal, deadline, beneficiary",
+        error: "Missing required fields: title, goal, deadline, beneficiary, creatorEmail",
+      });
+    }
+    
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(creatorEmail)) {
+      return res.status(400).json({
+        error: "Invalid email address format",
       });
     }
 
@@ -187,6 +199,7 @@ app.post("/api/campaigns", upload.single("proof"), async (req, res) => {
       mode: parseInt(mode),
       deadline: parseInt(deadline),
       beneficiary,
+      creatorEmail,
       proofUrl,
       proofs: ipfsCID ? [ipfsCID] : [],
     });
@@ -217,7 +230,7 @@ app.post("/api/campaigns", upload.single("proof"), async (req, res) => {
   }
 });
 
-// Approve campaign
+// Approve campaign (blockchain approval happens in frontend, this just updates DB)
 app.post("/api/campaigns/:id/approve", async (req, res) => {
   try {
     const { id } = req.params;
@@ -254,40 +267,25 @@ app.post("/api/campaigns/:id/approve", async (req, res) => {
       });
     }
 
-    // ✅ CRITICAL: Don't approve mock campaigns
-    if (campaign.chainCampaignId > 1000) {
-      return res.status(400).json({
-        error: "Cannot approve this campaign - it was created before blockchain integration was properly configured",
-        hint: "Please create a new campaign to test the system",
-      });
-    }
-
-    // ✅ CRITICAL: Approve on blockchain FIRST, fail if it doesn't work
-    try {
-      console.log(`[Backend] Calling blockchain approveCampaign for chain ID: ${campaign.chainCampaignId}`);
-      await approveCampaign(campaign.chainCampaignId);
-      console.log("[Backend] Blockchain approval successful!");
-    } catch (blockchainError) {
-      console.error("[Backend] Blockchain approval FAILED:", blockchainError.message);
-      
-      // ❌ DON'T update database if blockchain fails
-      return res.status(500).json({
-        error: "Failed to approve campaign on blockchain",
-        details: blockchainError.message,
-        hint: "Check that CELO_SEPOLIA_RPC and DEPLOYER_PRIVATE_KEY are set correctly in .env",
-      });
-    }
-
-    // ✅ Only update database if blockchain approval succeeded
+    // ✅ Update database status to active
+    // Note: Blockchain approval is handled by the frontend with MetaMask
     campaign.status = "active";
     await campaign.save();
     
-    console.log("[Backend] Campaign approved and marked as active:", campaign._id);
+    console.log("[Backend] Campaign marked as active in database:", campaign._id);
+    
+    // Send approval email to creator
+    try {
+      await sendCampaignApprovalEmail(campaign.title, campaign.creatorEmail);
+    } catch (emailError) {
+      console.error("[Backend] Failed to send approval email:", emailError.message);
+      // Don't fail the approval if email fails
+    }
     
     res.json({ 
       success: true, 
       campaign,
-      message: "Campaign approved successfully on blockchain and database"
+      message: "Campaign approved successfully in database"
     });
   } catch (err) {
     console.error("[Backend] Approve endpoint error:", err);
@@ -302,6 +300,7 @@ app.post("/api/campaigns/:id/approve", async (req, res) => {
 app.post("/api/campaigns/:id/reject", async (req, res) => {
   try {
     const { id } = req.params;
+    const { reason } = req.body;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({
@@ -315,7 +314,20 @@ app.post("/api/campaigns/:id/reject", async (req, res) => {
     }
 
     campaign.status = "rejected";
+    campaign.rejectionReason = reason || "No specific reason provided";
     await campaign.save();
+    
+    // Send rejection email to creator
+    try {
+      await sendCampaignRejectionEmail(
+        campaign.title,
+        campaign.creatorEmail,
+        campaign.rejectionReason
+      );
+    } catch (emailError) {
+      console.error("[Backend] Failed to send rejection email:", emailError.message);
+      // Don't fail the rejection if email fails
+    }
 
     res.json({ success: true, campaign });
   } catch (err) {

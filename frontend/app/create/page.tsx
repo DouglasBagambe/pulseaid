@@ -13,6 +13,7 @@ export default function CreatePage() {
   const [goal, setGoal] = useState("1");
   const [mode, setMode] = useState("0");
   const [deadline, setDeadline] = useState("");
+  const [creatorEmail, setCreatorEmail] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
@@ -22,10 +23,6 @@ export default function CreatePage() {
   // Handle client-side mounting to avoid hydration issues
   useEffect(() => {
     setMounted(true);
-    // Calculate minimum deadline (24 hours from now)
-    const minDeadline = Math.floor(Date.now() / 1000) + 86400;
-    const minDateStr = new Date(minDeadline * 1000).toISOString().slice(0, 16);
-    setMinDate(minDateStr);
     
     // Set default deadline to 7 days from now if not set
     if (!deadline) {
@@ -38,8 +35,15 @@ export default function CreatePage() {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
 
-    if (!title || !goal || !deadline) {
-      alert("Please fill all required fields");
+    if (!title || !goal || !deadline || !creatorEmail) {
+      alert("Please fill all required fields including email");
+      return;
+    }
+    
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(creatorEmail)) {
+      alert("Please enter a valid email address");
       return;
     }
 
@@ -58,6 +62,7 @@ export default function CreatePage() {
       fd.append("goal", goal);
       fd.append("mode", mode);
       fd.append("beneficiary", address); // Add beneficiary (connected wallet)
+      fd.append("creatorEmail", creatorEmail);
       
       // Convert datetime-local to Unix timestamp
       const deadlineDate = new Date(deadline);
@@ -106,15 +111,6 @@ export default function CreatePage() {
   }
 
   function handleDeadlineChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const selectedDate = new Date(e.target.value);
-    const now = new Date();
-    const minAllowed = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-
-    if (selectedDate < minAllowed) {
-      alert("Deadline must be at least 24 hours in the future");
-      return;
-    }
-
     setDeadline(e.target.value);
   }
 
@@ -282,6 +278,24 @@ export default function CreatePage() {
               </div>
             </div>
 
+            {/* Email Address */}
+            <div className="relative group">
+              <label className="block text-sm font-semibold mb-3 text-white">
+                Your Email Address <span className="text-[#35D07F]">*</span>
+              </label>
+              <input
+                type="email"
+                className="w-full bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl px-5 py-4 focus:outline-none focus:border-[#35D07F] focus:bg-white/10 transition-all duration-300 text-white placeholder-gray-500"
+                placeholder="your@email.com"
+                value={creatorEmail}
+                onChange={(e) => setCreatorEmail(e.target.value)}
+                required
+              />
+              <p className="text-xs text-gray-500 mt-2">
+                We'll notify you when your campaign is approved or if there are any issues
+              </p>
+            </div>
+
             {/* Deadline */}
             <div className="relative group">
               <label className="block text-sm font-semibold mb-3 text-white">
@@ -290,13 +304,12 @@ export default function CreatePage() {
               <input
                 type="datetime-local"
                 className="w-full bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl px-5 py-4 focus:outline-none focus:border-[#35D07F] focus:bg-white/10 transition-all duration-300 text-white"
-                min={minDate}
                 value={deadline}
                 onChange={handleDeadlineChange}
                 required
               />
               <p className="text-xs text-gray-500 mt-2">
-                Minimum: 24 hours from now
+                Set any deadline for your campaign
               </p>
             </div>
 

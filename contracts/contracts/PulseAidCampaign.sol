@@ -118,6 +118,48 @@ contract PulseAidCampaign is Ownable, ReentrancyGuard {
         campaigns[id].active = false;
     }
     
+    // ✅ Allow beneficiary to withdraw funds
+    function withdrawFunds(uint256 id) external nonReentrant {
+        Campaign storage camp = campaigns[id];
+        require(msg.sender == camp.beneficiary, "Only beneficiary can withdraw");
+        require(camp.approved, "Campaign not approved");
+        require(camp.raised > 0, "No funds to withdraw");
+        
+        // For KINDNESS mode: can withdraw anytime
+        // For ESCROW mode: must reach goal (deadline doesn't matter)
+        if (camp.mode == Mode.ESCROW) {
+            require(camp.raised >= camp.goal, "Escrow: Goal not reached");
+        }
+        
+        uint256 amount = camp.raised;
+        camp.raised = 0;
+        camp.active = false;
+        camp.beneficiary.transfer(amount);
+        emit FundsReleased(id, amount);
+    }
+    
+    // ✅ Get available withdrawal amount for a campaign
+    function getWithdrawableAmount(uint256 id) external view returns (uint256) {
+        Campaign storage camp = campaigns[id];
+        
+        // Not approved or no funds
+        if (!camp.approved || camp.raised == 0) {
+            return 0;
+        }
+        
+        // Kindness mode: can withdraw anytime
+        if (camp.mode == Mode.KINDNESS) {
+            return camp.raised;
+        }
+        
+        // Escrow mode: only if goal reached
+        if (camp.raised >= camp.goal) {
+            return camp.raised;
+        }
+        
+        return 0;
+    }
+    
     function mintBadgeForDonor(address donor, uint256 campaignId, uint8 badgeType) external onlyOwner {
         uint256 tokenId = badgeContract.mintBadge(donor, campaignId, badgeType);
         emit BadgeMinted(donor, tokenId, campaignId, badgeType);

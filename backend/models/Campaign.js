@@ -29,6 +29,12 @@ const campaignSchema = new mongoose.Schema({
   // Beneficiary wallet address
   beneficiary: { type: String, required: true },
   
+  // Creator email for notifications
+  creatorEmail: { type: String, required: true },
+  
+  // Rejection reason (if rejected)
+  rejectionReason: String,
+  
   // Proof document URL (IPFS)
   proofUrl: String,
   

@@ -5,7 +5,7 @@ import axios from "axios";
 import { useAccount, usePublicClient, useWalletClient } from "wagmi";
 import { parseEther, formatEther } from "viem";
 
-const CONTRACT_ADDRESS = "0xB39Aa33939b8c9a50b3331BD0beeAa98D0c0f91D";
+const CONTRACT_ADDRESS = "0xe753A3b1696622FAEE37f9b9EA5EAC774e196BE0";
 
 interface Campaign {
   _id: string;
@@ -32,6 +32,7 @@ export default function CampaignDetailPage() {
   const [campaign, setCampaign] = useState<Campaign | null>(null);
   const [loading, setLoading] = useState(true);
   const [donating, setDonating] = useState(false);
+  const [withdrawing, setWithdrawing] = useState(false);
   const [donationAmount, setDonationAmount] = useState("0.1");
   const [timeLeft, setTimeLeft] = useState("");
 
@@ -50,6 +51,15 @@ export default function CampaignDetailPage() {
 
   useEffect(() => {
     loadCampaign();
+    
+    // Check for amount in query params
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const amountParam = urlParams.get('amount');
+      if (amountParam) {
+        setDonationAmount(amountParam);
+      }
+    }
   }, [loadCampaign]);
 
   const updateTimeLeft = React.useCallback(() => {
@@ -95,7 +105,6 @@ export default function CampaignDetailPage() {
     // Check if we're on the correct network (Celo Sepolia)
     try {
       const chainId = await publicClient.getChainId();
-      console.log("Current chain ID:", chainId);
 
       // Celo Sepolia testnet chain ID is 11142220
       if (chainId !== 11142220) {
@@ -116,8 +125,6 @@ export default function CampaignDetailPage() {
     try {
       const balance = await publicClient.getBalance({ address });
       const requiredAmount = parseEther(donationAmount);
-      console.log("User balance:", formatEther(balance), "CELO");
-      console.log("Required amount:", formatEther(requiredAmount), "CELO");
 
       if (balance < requiredAmount) {
         alert(
@@ -152,6 +159,7 @@ export default function CampaignDetailPage() {
             { name: "deadline", type: "uint256" },
             { name: "mode", type: "uint8" },
             { name: "active", type: "bool" },
+            { name: "approved", type: "bool" },
           ],
         },
         {
@@ -164,13 +172,11 @@ export default function CampaignDetailPage() {
       ] as const;
 
       // Check campaign state on blockchain before donating
-      console.log("Checking campaign state for ID:", campaign.chainCampaignId);
       const campaignCount = await publicClient.readContract({
         address: CONTRACT_ADDRESS as `0x${string}`,
         abi: CROWDFUNDING_ABI,
         functionName: "campaignCount",
       });
-      console.log("Total campaigns on contract:", campaignCount);
 
       if (BigInt(campaign.chainCampaignId) > campaignCount) {
         throw new Error(
@@ -184,11 +190,16 @@ export default function CampaignDetailPage() {
         functionName: "campaigns",
         args: [BigInt(campaign.chainCampaignId)],
       });
-      console.log("Campaign data from blockchain:", campaignData);
 
-      if (!campaignData[6]) {
-        // active field
-        throw new Error("Campaign is not active on the blockchain");
+      // Check both active and approved fields
+      const isActive = campaignData[6]; // active field (index 6)
+      const isApproved = campaignData[7]; // approved field (index 7)
+      
+
+      if (!isActive || !isApproved) {
+        throw new Error(
+          `Campaign is not ready for donations. Active: ${isActive}, Approved: ${isApproved}`
+        );
       }
 
       const valueInWei = parseEther(donationAmount);
@@ -202,7 +213,6 @@ export default function CampaignDetailPage() {
       });
 
       alert("Transaction submitted! Waiting for confirmation...");
-      console.log("Transaction hash:", hash);
 
       // Wait for transaction confirmation
       const receipt = await publicClient.waitForTransactionReceipt({
@@ -210,7 +220,6 @@ export default function CampaignDetailPage() {
         timeout: 60000, // 60 second timeout
       });
 
-      console.log("Transaction receipt:", receipt);
 
       if (receipt.status === "success") {
         // Update the campaign's raised amount in the database
@@ -251,6 +260,8 @@ export default function CampaignDetailPage() {
           message = "Transaction was cancelled by user";
         } else if (message.includes("insufficient funds")) {
           message = "Insufficient funds for transaction";
+        } else if (message.includes("not ready for donations")) {
+          message = "Campaign has not been approved by admin yet. Please wait for approval.";
         } else if (message.includes("execution reverted")) {
           message =
             "Transaction was reverted by the smart contract. The campaign might not be accepting donations.";
@@ -263,6 +274,92 @@ export default function CampaignDetailPage() {
       alert(`Donation failed: ${message}`);
     } finally {
       setDonating(false);
+    }
+  }
+
+  async function handleWithdraw() {
+    if (!address || !walletClient || !campaign || !publicClient) {
+      alert("Please connect your wallet first");
+      return;
+    }
+
+    if (address.toLowerCase() !== campaign.beneficiary?.toLowerCase()) {
+      alert("Only the campaign beneficiary can withdraw funds");
+      return;
+    }
+
+    // For ESCROW mode, check only goal (deadline doesn't matter)
+    if (campaign.mode === 1) {
+      if ((campaign.raised || 0) < campaign.goal) {
+        alert("Escrow mode: Goal not reached yet. Need " + campaign.goal.toFixed(2) + " CELO");
+        return;
+      }
+    }
+    // KINDNESS mode (mode 0): can withdraw anytime!
+
+    setWithdrawing(true);
+    try {
+      const WITHDRAW_ABI = [
+        {
+          name: "withdrawFunds",
+          type: "function",
+          stateMutability: "nonpayable",
+          inputs: [{ name: "id", type: "uint256" }],
+          outputs: [],
+        },
+      ] as const;
+
+      
+      const hash = await walletClient.writeContract({
+        address: CONTRACT_ADDRESS as `0x${string}`,
+        abi: WITHDRAW_ABI,
+        functionName: "withdrawFunds",
+        args: [BigInt(campaign.chainCampaignId)],
+      });
+
+      alert("Withdrawal transaction submitted! Waiting for confirmation...");
+
+      const receipt = await publicClient.waitForTransactionReceipt({
+        hash,
+        timeout: 60000,
+      });
+
+
+      if (receipt.status === "reverted") {
+        // Try to get revert reason
+        throw new Error("Transaction reverted - check contract requirements (approved, has funds, deadline/goal met for escrow)");
+      }
+      
+      if (receipt.status === "success") {
+        alert("Funds withdrawn successfully! 🎉 Check your wallet.");
+        // Wait a bit for blockchain to update, then reload
+        setTimeout(() => {
+          loadCampaign();
+          window.location.reload();
+        }, 2000);
+      } else {
+        throw new Error("Withdrawal transaction failed with status: " + receipt.status);
+      }
+    } catch (err: unknown) {
+      
+      let message = "Unknown error occurred";
+      if (err instanceof Error) {
+        message = err.message;
+        
+        if (message.includes("User rejected")) {
+          message = "Transaction was cancelled by user";
+        } else if (message.includes("No funds to withdraw")) {
+          message = "No funds available to withdraw";
+        } else if (message.includes("Goal not reached")) {
+          message = "Goal was not reached. Refunds are available for donors.";
+        } else if (message.includes("Only beneficiary")) {
+          message = "Only the campaign beneficiary can withdraw funds";
+        }
+      }
+      
+      alert(`Withdrawal failed: ${message}`);
+    } finally {
+      setWithdrawing(false);
     }
   }
 
@@ -632,6 +729,60 @@ export default function CampaignDetailPage() {
                           "Donate Now"
                         )}
                       </button>
+
+                      {/* Withdraw Button - Only for Beneficiary */}
+                      {address && campaign.beneficiary && address.toLowerCase() === campaign.beneficiary.toLowerCase() && (
+                        <div className="relative group">
+                          {(() => {
+                            // Kindness: can withdraw anytime with funds
+                            // Escrow: can withdraw only when goal is reached (deadline doesn't matter)
+                            const canWithdraw = campaign.mode === 0 || 
+                              (campaign.mode === 1 && (campaign.raised || 0) >= campaign.goal);
+                            const isBlocked = campaign.mode === 1 && (campaign.raised || 0) < campaign.goal;
+                            
+                            return (
+                              <>
+                                <button
+                                  onClick={handleWithdraw}
+                                  disabled={withdrawing || (campaign.raised || 0) === 0 || isBlocked}
+                                  className={`w-full py-4 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-[1.02] ${
+                                    isBlocked
+                                      ? "bg-white/5 border-2 border-dashed border-white/20 text-gray-400 cursor-not-allowed blur-sm"
+                                      : canWithdraw
+                                      ? "bg-gradient-to-r from-[#FCFF52] to-[#FFA500] text-black hover:shadow-lg hover:shadow-[#FCFF52]/30"
+                                      : "bg-white/5 border border-white/10 text-gray-400 cursor-not-allowed"
+                                  } ${withdrawing ? "opacity-50" : ""}`}
+                                >
+                                  {withdrawing ? (
+                                    <span className="flex items-center justify-center gap-2">
+                                      <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                      </svg>
+                                      Withdrawing...
+                                    </span>
+                                  ) : (campaign.raised || 0) === 0 ? (
+                                    "💰 No Funds Yet"
+                                  ) : canWithdraw ? (
+                                    `💰 Withdraw ${(campaign.raised || 0).toFixed(2)} CELO`
+                                  ) : (
+                                    "🛡️ Escrow: Goal Not Reached"
+                                  )}
+                                </button>
+                                {isBlocked && (
+                                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                    <div className="bg-black/80 backdrop-blur-sm px-4 py-2 rounded-xl border border-white/20">
+                                      <p className="text-xs text-white font-medium">
+                                        🎯 Escrow: Need {campaign.goal.toFixed(2)} CELO ({((campaign.raised || 0) / campaign.goal * 100).toFixed(0)}% reached)
+                                      </p>
+                                    </div>
+                                  </div>
+                                )}
+                              </>
+                            );
+                          })()}
+                        </div>
+                      )}
 
                       <div className="pt-4 border-t border-white/10">
                         <div className="flex items-start gap-3">

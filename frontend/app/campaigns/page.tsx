@@ -59,7 +59,6 @@ export default function CampaignsPage() {
       setLoading(true);
       const base =
         process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
-      console.log("Attempting to fetch from:", `${base}/api/campaigns`);
 
       const res = await axios.get(`${base}/api/campaigns`, {
         timeout: 10000, // 10 second timeout
@@ -69,32 +68,19 @@ export default function CampaignsPage() {
       });
       const data = res.data;
 
-      console.log("Backend response:", data); // Debug log
-
       if (data.success && Array.isArray(data.campaigns)) {
         setCampaigns(data.campaigns);
       } else {
-        console.warn("Unexpected response structure:", data);
         setCampaigns([]);
       }
     } catch (err) {
-      console.error("Failed to load campaigns:", err);
       if (axios.isAxiosError(err)) {
         if (err.code === "ECONNREFUSED") {
-          console.error(
-            "Backend server is not running. Please start it with: cd backend && npm run dev"
-          );
+          // Removed console statement
         } else if (err.code === "NETWORK_ERROR") {
-          console.error(
-            "Network error. Check your internet connection and backend URL."
-          );
+          // Removed console statement
         } else {
-          console.error(
-            "Axios error:",
-            err.message,
-            "Status:",
-            err.response?.status
-          );
+          // Removed console statement
         }
       }
       setCampaigns([]);

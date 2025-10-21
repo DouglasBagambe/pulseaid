@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 
 type Props = {
   id: string;
@@ -9,7 +9,7 @@ type Props = {
   deadline?: number;
   mode?: number;
   status?: string;
-  onDonate?: (id: string) => void;
+  onDonate?: (id: string, amount: string) => void;
   onClick?: (id: string) => void;
 };
 
@@ -25,8 +25,12 @@ export default function CampaignCard({
   onDonate,
   onClick,
 }: Props) {
-  const pct = Math.min(100, Math.round((raised / Math.max(goal, 1)) * 100));
+  const [showDonateModal, setShowDonateModal] = useState(false);
+  const [donateAmount, setDonateAmount] = useState("");
+  
+  const pct = goal > 0 ? Math.min(100, Math.round((raised / goal) * 100)) : 0;
   const isEscrow = mode === 1;
+  const canDonate = status === "active";
   
   // Calculate days remaining
   const daysRemaining = deadline 
@@ -34,16 +38,27 @@ export default function CampaignCard({
     : null;
 
   const handleCardClick = (e: React.MouseEvent) => {
-    // Don't trigger card click if donate button was clicked
-    if ((e.target as HTMLElement).closest('.donate-button')) {
+    // Don't trigger card click if donate button or modal was clicked
+    if ((e.target as HTMLElement).closest('.donate-button') || 
+        (e.target as HTMLElement).closest('.donate-modal')) {
       return;
     }
     onClick?.(id);
   };
 
-  const handleDonate = (e: React.MouseEvent) => {
+  const handleDonateClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onDonate?.(id);
+    if (!canDonate) return;
+    setShowDonateModal(true);
+  };
+
+  const handleDonateSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (donateAmount && parseFloat(donateAmount) > 0) {
+      onDonate?.(id, donateAmount);
+      setShowDonateModal(false);
+      setDonateAmount("");
+    }
   };
 
   return (
@@ -55,7 +70,7 @@ export default function CampaignCard({
       <div className="absolute inset-0 bg-gradient-to-br from-[#35D07F]/0 via-[#FCFF52]/0 to-[#35D07F]/0 group-hover:from-[#35D07F]/20 group-hover:via-[#FCFF52]/10 group-hover:to-[#35D07F]/20 rounded-2xl blur-xl transition-all duration-500" />
       
       {/* Main card */}
-      <div className="relative bg-white/5 backdrop-blur-md border border-white/10 group-hover:border-[#35D07F]/30 rounded-2xl overflow-hidden transition-all duration-300 transform group-hover:scale-[1.02] group-hover:shadow-2xl">
+      <div className="relative bg-white/5 backdrop-blur-md border border-white/10 group-hover:border-[#35D07F]/30 rounded-2xl overflow-hidden transition-all duration-300 transform group-hover:scale-[1.02] group-hover:shadow-2xl flex flex-col min-h-[400px]">
         {/* Status & Mode badges */}
         <div className="absolute top-4 left-4 flex gap-2 z-10">
           <span className={`px-3 py-1.5 rounded-full text-xs font-bold backdrop-blur-md ${
@@ -73,14 +88,14 @@ export default function CampaignCard({
         </div>
 
         {/* Content */}
-        <div className="p-6 pt-16">
-          {/* Title */}
-          <h3 className="text-xl font-bold text-white mb-2 line-clamp-2 group-hover:text-[#FCFF52] transition-colors duration-300">
+        <div className="p-6 pt-16 flex flex-col flex-1">
+          {/* Title - Fixed height */}
+          <h3 className="text-xl font-bold text-white mb-2 line-clamp-2 min-h-[3.5rem] group-hover:text-[#FCFF52] transition-colors duration-300">
             {title}
           </h3>
           
-          {/* Description */}
-          <p className="text-gray-400 text-sm line-clamp-3 mb-6 leading-relaxed">
+          {/* Description - Fixed height */}
+          <p className="text-gray-400 text-sm line-clamp-2 mb-6 leading-relaxed min-h-[2.5rem]">
             {description || "No description provided"}
           </p>
 
@@ -135,8 +150,14 @@ export default function CampaignCard({
             
             {onDonate && (
               <button
-                onClick={handleDonate}
-                className="donate-button ml-auto px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#35D07F] to-[#2AB56F] text-black font-bold hover:shadow-lg hover:shadow-[#35D07F]/50 transition-all duration-300 transform hover:scale-105 active:scale-95"
+                onClick={handleDonateClick}
+                disabled={!canDonate}
+                className={`donate-button ml-auto px-6 py-2.5 rounded-xl font-bold transition-all duration-300 transform ${
+                  canDonate
+                    ? "bg-gradient-to-r from-[#35D07F] to-[#2AB56F] text-black hover:shadow-lg hover:shadow-[#35D07F]/50 hover:scale-105 active:scale-95 cursor-pointer"
+                    : "bg-white/5 border border-white/10 text-gray-500 blur-sm cursor-not-allowed"
+                }`}
+                title={!canDonate ? "Campaign not active yet" : ""}
               >
                 Donate Now
               </button>
@@ -147,6 +168,77 @@ export default function CampaignCard({
         {/* Hover indicator */}
         <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-[#35D07F] via-[#FCFF52] to-[#35D07F] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
       </div>
+
+      {/* Donation Modal */}
+      {showDonateModal && (
+        <div 
+          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 donate-modal"
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowDonateModal(false);
+          }}
+        >
+          <div 
+            className="bg-[#0B1020] border border-white/10 rounded-2xl p-6 max-w-md w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-2xl font-bold text-white mb-4">Donate to Campaign</h3>
+            <p className="text-gray-400 mb-6">{title}</p>
+            
+            <form onSubmit={handleDonateSubmit}>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Amount (CELO)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0.01"
+                  value={donateAmount}
+                  onChange={(e) => setDonateAmount(e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#35D07F] transition-all"
+                  placeholder="0.1"
+                  autoFocus
+                  required
+                />
+              </div>
+
+              {/* Quick amounts */}
+              <div className="grid grid-cols-3 gap-2 mb-6">
+                {["0.5", "1", "5"].map((amount) => (
+                  <button
+                    key={amount}
+                    type="button"
+                    onClick={() => setDonateAmount(amount)}
+                    className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm text-gray-300 hover:bg-white/10 hover:border-[#35D07F]/30 transition-all"
+                  >
+                    {amount} CELO
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowDonateModal(false);
+                  }}
+                  className="flex-1 px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 px-4 py-3 rounded-xl bg-gradient-to-r from-[#35D07F] to-[#2AB56F] text-black font-bold hover:shadow-lg hover:shadow-[#35D07F]/50 transition-all"
+                >
+                  Donate Now
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

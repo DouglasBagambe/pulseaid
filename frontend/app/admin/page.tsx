@@ -1,6 +1,10 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import axios, { AxiosError } from "axios";
+import { useAccount, usePublicClient, useWalletClient } from "wagmi";
+import { parseEther } from "viem";
+
+const CONTRACT_ADDRESS = "0xe753A3b1696622FAEE37f9b9EA5EAC774e196BE0";
 
 type Campaign = {
   _id: string;
@@ -26,6 +30,10 @@ const TABS: Array<{ key: string; label: string }> = [
 ];
 
 export default function AdminPage() {
+  const { address } = useAccount();
+  const publicClient = usePublicClient();
+  const { data: walletClient } = useWalletClient();
+  
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<string>("pending");
@@ -55,7 +63,6 @@ export default function AdminPage() {
       const data = res.data?.campaigns || [];
       setCampaigns(Array.isArray(data) ? data : []);
     } catch (e) {
-      console.error(e);
     } finally {
       setLoading(false);
     }
@@ -79,35 +86,141 @@ export default function AdminPage() {
   }, [campaigns, tab, search]);
 
   async function approve(id: string) {
+    if (!address || !walletClient || !publicClient) {
+      alert("Please connect your wallet first to approve campaigns");
+      return;
+    }
+
     try {
       setActionLoadingId(id);
-      const base =
-        process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
+      
+      // Find the campaign to get its chainCampaignId
+      const campaign = campaigns.find(c => c._id === id);
+      if (!campaign) {
+        throw new Error("Campaign not found");
+      }
+
+      const CAMPAIGN_ABI = [
+        {
+          name: "approveCampaign",
+          type: "function",
+          stateMutability: "nonpayable",
+          inputs: [{ name: "id", type: "uint256" }],
+          outputs: [],
+        },
+        {
+          name: "campaigns",
+          type: "function",
+          stateMutability: "view",
+          inputs: [{ name: "id", type: "uint256" }],
+          outputs: [
+            { name: "beneficiary", type: "address" },
+            { name: "ipfsMetadata", type: "string" },
+            { name: "goal", type: "uint256" },
+            { name: "raised", type: "uint256" },
+            { name: "deadline", type: "uint256" },
+            { name: "mode", type: "uint8" },
+            { name: "active", type: "bool" },
+            { name: "approved", type: "bool" },
+          ],
+        },
+        {
+          name: "owner",
+          type: "function",
+          stateMutability: "view",
+          inputs: [],
+          outputs: [{ name: "", type: "address" }],
+        },
+      ] as const;
+
+      // Check contract owner
+      const contractOwner = await publicClient.readContract({
+        address: CONTRACT_ADDRESS as `0x${string}`,
+        abi: CAMPAIGN_ABI,
+        functionName: "owner",
+      });
+
+      // Check current state on blockchain
+      const campaignData = await publicClient.readContract({
+        address: CONTRACT_ADDRESS as `0x${string}`,
+        abi: CAMPAIGN_ABI,
+        functionName: "campaigns",
+        args: [BigInt(campaign.chainCampaignId)],
+      });
+
+      // Check if already approved
+      if (campaignData[7]) { // approved field
+        alert("This campaign is already approved on the blockchain");
+        return;
+      }
+
+      // Call blockchain approveCampaign with MetaMask
+      
+      const hash = await walletClient.writeContract({
+        address: CONTRACT_ADDRESS as `0x${string}`,
+        abi: CAMPAIGN_ABI,
+        functionName: "approveCampaign",
+        args: [BigInt(campaign.chainCampaignId)],
+      });
+
+      alert("Approval transaction submitted! Waiting for confirmation...");
+
+      // Wait for transaction confirmation
+      const receipt = await publicClient.waitForTransactionReceipt({
+        hash,
+        timeout: 60000,
+      });
+
+
+      if (receipt.status !== "success") {
+        throw new Error("Blockchain approval transaction failed");
+      }
+
+      // Now update the database
+      const base = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
       const res = await axios.post(`${base}/api/campaigns/${id}/approve`);
       const updated: Campaign = res.data?.campaign;
       setCampaigns((prev) => prev.map((c) => (c._id === id ? updated : c)));
-      console.log("Campaign approved successfully:", updated);
+      
+      alert("Campaign approved successfully on blockchain and database! ✅");
     } catch (e: unknown) {
       const errorMessage = getErrorMessage(e, "Approve failed");
-      console.error("Approve error:", e);
-      alert(`Approve failed: ${errorMessage}`);
+      
+      let message = errorMessage;
+      if (errorMessage.includes("User rejected")) {
+        message = "Transaction was cancelled by user";
+      } else if (errorMessage.includes("Already approved")) {
+        message = "Campaign is already approved";
+      } else if (errorMessage.includes("Campaign expired")) {
+        message = "Cannot approve expired campaign";
+      }
+      
+      alert(`Approve failed: ${message}`);
     } finally {
       setActionLoadingId(null);
     }
   }
 
   async function reject(id: string) {
+    const reason = prompt("Please provide a reason for rejection (this will be sent to the campaign creator):");
+    
+    if (!reason || reason.trim() === "") {
+      alert("Rejection reason is required");
+      return;
+    }
+    
     try {
       setActionLoadingId(id);
       const base =
         process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
-      const res = await axios.post(`${base}/api/campaigns/${id}/reject`);
+      const res = await axios.post(`${base}/api/campaigns/${id}/reject`, {
+        reason: reason.trim()
+      });
       const updated: Campaign = res.data?.campaign;
       setCampaigns((prev) => prev.map((c) => (c._id === id ? updated : c)));
-      console.log("Campaign rejected successfully:", updated);
+      alert("Campaign rejected and email notification sent to creator");
     } catch (e: unknown) {
       const errorMessage = getErrorMessage(e, "Reject failed");
-      console.error("Reject error:", e);
       alert(`Reject failed: ${errorMessage}`);
     } finally {
       setActionLoadingId(null);

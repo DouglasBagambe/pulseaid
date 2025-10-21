@@ -29,6 +29,12 @@ async function main() {
     const campaignAddress = await campaign.getAddress();
     console.log("Campaign deployed to:", campaignAddress);
 
+    // Transfer EscrowHelper ownership to Campaign contract
+    console.log("\nTransferring EscrowHelper ownership to Campaign contract...");
+    const transferTx = await escrow.transferOwnership(campaignAddress);
+    await transferTx.wait();
+    console.log("✅ EscrowHelper ownership transferred to Campaign");
+
     console.log("\n✅ Deployment successful!");
     console.log("Escrow:", escrowAddress);
     console.log("Badge:", badgeAddress);

@@ -77,11 +77,11 @@ export default function RootLayout({
                     className="flex items-center gap-4 group relative z-10"
                   >
                     <div className="relative">
-                      {/* Glow layer */}
-                      <div className="absolute -inset-4 bg-gradient-to-r from-[#35D07F] via-[#FCFF52] to-[#35D07F] rounded-full opacity-40 group-hover:opacity-60 blur-2xl transition-all duration-700" />
+                      {/* Glow layer - toned down */}
+                      <div className="absolute -inset-4 bg-gradient-to-r from-[#35D07F] via-[#FCFF52] to-[#35D07F] rounded-full opacity-20 group-hover:opacity-30 blur-xl transition-all duration-500" />
                       
                       {/* Logo container with glassmorphism */}
-                      <div className="relative w-16 h-16 rounded-2xl bg-gradient-to-br from-[#35D07F] via-[#FCFF52] to-[#35D07F] p-[3px] transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
+                      <div className="relative w-16 h-16 rounded-2xl bg-gradient-to-br from-[#35D07F] via-[#FCFF52] to-[#35D07F] p-[3px] transform group-hover:scale-105 transition-all duration-300">
                         <div className="w-full h-full bg-[#0B1020]/90 backdrop-blur-xl rounded-2xl flex items-center justify-center relative overflow-hidden">
                           {/* Animated shine effect */}
                           <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
@@ -94,16 +94,13 @@ export default function RootLayout({
                       </div>
                     </div>
                     
-                    {/* Brand text with animations */}
+                    {/* Brand text */}
                     <div className="hidden sm:block">
-                      <h1 className="text-2xl font-black bg-gradient-to-r from-white via-[#35D07F] to-[#FCFF52] bg-clip-text text-transparent group-hover:tracking-wider transition-all duration-500 drop-shadow-lg">
+                      <h1 className="text-2xl font-black bg-gradient-to-r from-white via-[#35D07F] to-[#FCFF52] bg-clip-text text-transparent transition-all duration-300">
                         PulseAid
                       </h1>
                       <div className="flex items-center gap-2 mt-0.5">
-                        <div className="relative">
-                          <div className="w-2 h-2 rounded-full bg-[#35D07F] animate-ping absolute" />
-                          <div className="w-2 h-2 rounded-full bg-[#35D07F]" />
-                        </div>
+                        <div className="w-2 h-2 rounded-full bg-[#35D07F]" />
                         <p className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.2em]">
                           Celo Powered
                         </p>
@@ -155,14 +152,14 @@ export default function RootLayout({
                       <WalletConnector />
                     </div>
 
-                    {/* MEGA Mobile Menu Button */}
+                    {/* Mobile Menu Button */}
                     <button 
                       onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                       className="lg:hidden relative group"
                       aria-label="Toggle menu"
                     >
-                      <div className="absolute -inset-2 bg-gradient-to-r from-[#35D07F] to-[#FCFF52] rounded-2xl blur-lg opacity-30 group-hover:opacity-75 transition-all duration-300" />
-                      <div className="relative p-3 rounded-2xl bg-gradient-to-br from-[#35D07F] to-[#FCFF52] hover:scale-110 transition-transform duration-300">
+                      <div className="absolute -inset-2 bg-gradient-to-r from-[#35D07F] to-[#FCFF52] rounded-2xl blur-md opacity-20 group-hover:opacity-40 transition-all duration-300" />
+                      <div className="relative p-3 rounded-2xl bg-gradient-to-br from-[#35D07F] to-[#FCFF52] hover:scale-105 transition-transform duration-200">
                         <div className="w-6 h-6 flex flex-col items-center justify-center gap-1.5">
                           <span 
                             className={`w-6 h-0.5 bg-black rounded-full transition-all duration-500 ${
@@ -341,24 +338,32 @@ export default function RootLayout({
                     <div>
                       <h4 className="text-sm font-black text-white mb-8 uppercase tracking-[0.2em] flex items-center gap-2">
                         <div className="w-8 h-[2px] bg-gradient-to-r from-[#FCFF52] to-transparent" />
-                        Powered By
+                        Built With
                       </h4>
-                      <div className="flex flex-wrap gap-3">
-                        {[
-                          { label: 'Celo', color: 'from-[#35D07F] to-[#35D07F]' },
-                          { label: 'AI', color: 'from-[#FCFF52] to-[#FCFF52]' },
-                          { label: 'Next.js', color: 'from-white to-gray-400' },
-                          { label: 'Web3', color: 'from-purple-400 to-pink-400' }
-                        ].map((tech) => (
-                          <div key={tech.label} className="group relative">
-                            <div className={`absolute -inset-1 bg-gradient-to-r ${tech.color} rounded-xl opacity-0 group-hover:opacity-50 blur transition-all duration-300`} />
-                            <div className="relative px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 group-hover:border-white/30 transition-all duration-300">
-                              <span className={`text-xs font-bold bg-gradient-to-r ${tech.color} bg-clip-text text-transparent`}>
-                                {tech.label}
-                              </span>
+                      <div className="space-y-4">
+                        <a 
+                          href="https://nilebitlabs.com" 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="group flex items-center gap-3 text-gray-400 hover:text-[#35D07F] transition-all duration-300"
+                        >
+                          <div className="w-1.5 h-1.5 rounded-full bg-gray-600 group-hover:bg-[#35D07F] group-hover:w-8 transition-all duration-500" />
+                          <span className="font-bold">NileBit Labs</span>
+                        </a>
+                        <div className="flex flex-wrap gap-2 ml-5">
+                          {[
+                            { label: 'Celo', color: 'from-[#35D07F] to-[#35D07F]' },
+                            { label: 'Web3', color: 'from-purple-400 to-pink-400' }
+                          ].map((tech) => (
+                            <div key={tech.label} className="group relative">
+                              <div className="relative px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 group-hover:border-white/20 transition-all duration-300">
+                                <span className={`text-xs font-medium bg-gradient-to-r ${tech.color} bg-clip-text text-transparent`}>
+                                  {tech.label}
+                                </span>
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          ))}
+                        </div>
                       </div>
                     </div>
                   </div>

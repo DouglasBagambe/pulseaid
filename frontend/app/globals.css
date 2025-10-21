@@ -32,3 +32,33 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Dial down animations and brightness */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Reduce blur effects */
+.blur-3xl {
+  --tw-blur: blur(40px);
+}
+
+.blur-2xl {
+  --tw-blur: blur(30px);
+}
+
+/* Tone down gradients */
+.bg-gradient-to-r,
+.bg-gradient-to-br,
+.bg-gradient-to-tr {
+  opacity: 0.85;
+}
