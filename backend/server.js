@@ -51,6 +51,23 @@ mongoose
     process.exit(1);
   });
 
+// Root endpoint
+app.get("/", (req, res) => {
+  res.json({
+    name: "PulseAid API",
+    version: "1.0.0",
+    status: "running",
+    endpoints: {
+      health: "/api/health",
+      campaigns: "/api/campaigns",
+      createCampaign: "POST /api/campaigns",
+      approveCampaign: "POST /api/campaigns/:id/approve",
+      rejectCampaign: "POST /api/campaigns/:id/reject",
+    },
+    documentation: "https://github.com/DouglasBagambe/pulseaid",
+  });
+});
+
 // Health check endpoint
 app.get("/api/health", (req, res) => {
   res.json({
