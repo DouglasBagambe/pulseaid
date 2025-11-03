@@ -2,7 +2,7 @@
 
 A full-stack Web3 crowdfunding platform built for Celo blockchain, featuring AI-powered verification and NFT badge rewards.
 
-## 🎯 Project Overview
+## Project Overview
 
 PulseAid is a hackathon-ready MVP that revolutionizes crowdfunding through blockchain technology, AI verification, and mobile-first design. The platform supports two campaign modes: **Pure Kindness** (immediate release) and **Escrow/Goal** (conditional release), with NFT badge rewards for donors.
 
